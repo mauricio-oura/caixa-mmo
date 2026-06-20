@@ -427,14 +427,41 @@ function sair() {
   location.reload();
 }
 
-// ── Chamadas ao GAS ───────────────────────────────────────
-async function chamarGAS(acao) {
-  const url = `${GAS_URL}?acao=${acao}&token=${encodeURIComponent(ID_TOKEN_ATUAL)}`;
-  const resp = await fetch(url, { redirect: 'follow' });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const dados = await resp.json();
-  if (dados.erro) throw new Error(dados.erro);
-  return dados;
+// ── Chamadas ao GAS via JSONP (evita bloqueio de CORS) ───
+// O GAS não suporta headers CORS — JSONP é a solução padrão.
+// Cada chamada injeta um <script> com callback único e remove após resposta.
+let _jpCounter = 0;
+
+function chamarGAS(acao) {
+  return new Promise(function(resolve, reject) {
+    const cbName = '__jp' + (_jpCounter++);
+    const url = GAS_URL
+      + '?acao='     + encodeURIComponent(acao)
+      + '&token='    + encodeURIComponent(ID_TOKEN_ATUAL)
+      + '&callback=' + cbName;
+
+    const timeout = setTimeout(function() {
+      delete window[cbName];
+      reject(new Error('Timeout na chamada: ' + acao));
+    }, 30000);
+
+    window[cbName] = function(dados) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.parentNode && script.parentNode.removeChild(script);
+      if (dados && dados.erro) reject(new Error(dados.erro));
+      else resolve(dados);
+    };
+
+    const script = document.createElement('script');
+    script.src = url;
+    script.onerror = function() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      reject(new Error('Erro ao carregar script JSONP para: ' + acao));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 async function carregarTodosDados() {
