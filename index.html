@@ -1,912 +1,258 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Financeiro</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    /* ── Reset & Base ── */
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+// ==========================================================
+// PAINEL FINANCEIRO — GAS DESVINCULADO
+// Autor: Mauricio Massao Oura
+// Arquitetura: igual à agenda PPGE — openById + fetch normal
+// ==========================================================
 
-    /* ── Tela de Login ── */
-    #tela-login {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
-    }
-    .login-card {
-      background: white;
-      border-radius: 16px;
-      padding: 48px 40px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-      text-align: center;
-      max-width: 380px;
-      width: 90%;
-    }
-    .login-icon { font-size: 3rem; margin-bottom: 12px; }
-    .login-titulo { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-    .login-sub { font-size: 0.88rem; color: #64748b; margin-bottom: 32px; }
-    #g_id_signin { display: flex; justify-content: center; }
-    #erro-login { font-size: 0.83rem; color: #dc3545; margin-top: 14px; display: none; }
+const EMAILS_AUTORIZADOS = [
+  "mauricio.oura@gmail.com"
+];
 
-    /* ── App (escondido até login) ── */
-    #app { display: none; }
+const GOOGLE_CLIENT_ID = "388994231044-5pc8p0stqbcprq2m3dpdoqlhqq5thim0.apps.googleusercontent.com";
+const SPREADSHEET_ID   = "1bf1UHgw12z-tgJeWKoivrCcG-SqMYI9Awv758VZume4";
 
-    /* ── Header ── */
-    .app-header {
-      background: white;
-      border-bottom: 1px solid #dee2e6;
-      padding: 8px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .app-header .titulo { font-weight: 700; font-size: 0.95rem; color: #1e293b; }
-    .usuario-info { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #64748b; }
-    .usuario-info img { width: 28px; height: 28px; border-radius: 50%; }
-    .btn-sair { font-size: 0.75rem; padding: 3px 10px; }
+// ── ROTEADOR ──────────────────────────────────────────────
+function doGet(e) {
+  const params = e && e.parameter ? e.parameter : {};
+  const acao   = params.acao  || "";
+  const token  = params.token || "";
 
-    /* ── Barra de Filtros ── */
-    .filtros-topo {
-      background: #ffffff;
-      border-bottom: 1px solid #dee2e6;
-      padding: 10px 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-      position: sticky;
-      top: var(--altura-header, 45px);
-      z-index: 100;
-    }
-    .filtro-grupo { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
-    .filtro-bloco { display: flex; flex-direction: column; gap: 5px; }
-    .filtro-label { font-size: 0.68rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
-    .chips-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
-    .chip {
-      display: inline-flex; align-items: center;
-      padding: 3px 11px; border-radius: 999px;
-      font-size: 0.78rem; font-weight: 400;
-      border: 1px solid #dee2e6; background: #f8f9fa; color: #495057;
-      cursor: pointer; user-select: none; white-space: nowrap;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-    }
-    .chip:hover { background: #e9ecef; border-color: #ced4da; }
-    .chip.ativo-azul  { background: #dbeafe; color: #1d4ed8; border-color: #3b82f6; font-weight: 600; }
-    .chip.ativo-roxo  { background: #ede9fe; color: #5b21b6; border-color: #7c3aed; font-weight: 600; }
-    .btn-limpar-filtros { font-size: 0.75rem; padding: 4px 10px; white-space: nowrap; align-self: flex-end; }
-
-    /* ── Abas fixas ── */
-    .abas-fixas {
-      background: #ffffff;
-      border-bottom: 1px solid #dee2e6;
-      padding: 8px 20px;
-      position: sticky;
-      top: var(--altura-filtros-total, 90px);
-      z-index: 99;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    }
-
-    /* ── Conteúdo ── */
-    .conteudo-principal { padding: 16px 20px; }
-    .container-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 20px; }
-    .loading { font-size: 1.1rem; font-weight: 500; text-align: center; margin: 30px 0; }
-    .table-responsive { max-height: 48vh; overflow: auto; border: 1px solid #dee2e6; border-radius: 6px; }
-    thead th { position: sticky; top: 0; z-index: 3; background-color: #212529 !important; color: #ffffff !important; }
-    tfoot tr td { position: sticky; bottom: 0; z-index: 3; background-color: #e9ecef !important; font-weight: bold; border-top: 2px solid #6c757d !important; }
-    .coluna-fixa-largura { width: 260px !important; min-width: 260px !important; max-width: 260px !important; }
-    table td:first-child, table th:first-child { position: sticky; left: 0; z-index: 2; background-color: #ffffff; border-right: 2px solid #dee2e6 !important; }
-    table th:first-child, tfoot tr td:first-child { z-index: 4; }
-    table th:first-child { background-color: #212529 !important; }
-    tfoot tr td:first-child { background-color: #e9ecef !important; }
-    tbody tr.linha-mae:hover td { background-color: #f1f3f5 !important; cursor: pointer; }
-    th, td { white-space: nowrap; padding: 8px 12px !important; font-size: 0.9rem; }
-    .linha-detalhe { display: none; background-color: #fcfdfe; }
-    .linha-detalhe td { padding: 0 !important; }
-    .slider-conteudo { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-in-out; }
-    .tabela-filha { margin: 0; background: #f8f9fa; width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .tabela-filha td { font-size: 0.8rem; padding: 6px 12px !important; border-bottom: 1px dotted #dee2e6 !important; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; box-sizing: border-box; }
-    .tabela-filha td:first-child { text-align: left !important; padding-left: 20px !important; }
-    .tabela-filha td.text-end { text-align: right !important; }
-    .tabela-filha { width: 100% !important; table-layout: fixed !important; border-collapse: collapse; box-sizing: border-box !important; }
-    .tabela-filha tr td:first-child { width: 260px !important; min-width: 260px !important; max-width: 260px !important; }
-    .nav-pills .nav-link.active { background-color: #0d6efd; }
-    #tab-cartao.active { background-color: #198754; }
-    #tab-resumo.active { background-color: #6f42c1; }
-    .nav-pills .nav-link { color: #495057; font-weight: 500; }
-    .progresso-wrap { display: flex; align-items: center; gap: 6px; min-width: 160px; }
-    .progresso-trilho { flex: 1; height: 6px; background: #e9ecef; border-radius: 999px; overflow: hidden; }
-    .progresso-barra { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
-    .progresso-label { font-size: 0.72rem; font-weight: 600; white-space: nowrap; min-width: 38px; text-align: right; }
-    tr.linha-mes-atual > td { background-color: #fffbeb !important; }
-    tr.linha-mes-atual > td:first-child { background-color: #fffbeb !important; }
-    tr.linha-mes-atual > td:first-child::before { content: '▶ '; font-size: 0.6rem; color: #f59e0b; vertical-align: middle; }
-    .chart-container { position: relative; height: 240px; width: 100%; }
-    .card-metrica { border-left: 4px solid #6f42c1; background: #fdfcff; padding: 12px; border-radius: 6px; }
-
-    /* ── Overlay de carregamento global ── */
-    #overlay-carregando {
-      position: fixed; inset: 0; background: rgba(255,255,255,0.85);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 9999; gap: 12px;
-    }
-    #overlay-carregando p { font-size: 0.9rem; color: #64748b; font-weight: 500; }
-
-    @media (max-width: 768px) {
-      #container-lancamentos table { table-layout: auto !important; }
-      #container-lancamentos td, #container-lancamentos th { white-space: normal !important; padding: 10px 5px !important; font-size: 0.8rem !important; }
-      .table-responsive { border: 1px solid #dee2e6; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ══════════════════════════════════════
-     TELA DE LOGIN
-══════════════════════════════════════ -->
-<div id="tela-login">
-  <div class="login-card">
-    <div class="login-icon">📊</div>
-    <div class="login-titulo">Painel Financeiro</div>
-    <div class="login-sub">Acesso restrito. Faça login com sua conta Google autorizada.</div>
-    <div id="g_id_signin"></div>
-    <div id="erro-login"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     OVERLAY DE CARREGAMENTO
-══════════════════════════════════════ -->
-<div id="overlay-carregando" style="display:none;">
-  <div class="spinner-border text-primary" role="status"></div>
-  <p id="overlay-msg">Carregando dados...</p>
-</div>
-
-<!-- ══════════════════════════════════════
-     APP PRINCIPAL
-══════════════════════════════════════ -->
-<div id="app">
-
-  <!-- Header com info do usuário -->
-  <div class="app-header">
-    <span class="titulo">📊 Painel Financeiro</span>
-    <div class="usuario-info">
-      <img id="usuario-foto" src="" alt="" style="display:none;">
-      <span id="usuario-nome"></span>
-      <button class="btn btn-outline-secondary btn-sair btn-sm" onclick="sair()">Sair</button>
-    </div>
-  </div>
-
-  <!-- Barra de Filtros -->
-  <div class="filtros-topo">
-    <div class="d-flex align-items-start gap-3 flex-wrap">
-      <div id="grupo-filtros-historico" class="filtro-grupo">
-        <div class="filtro-bloco">
-          <span class="filtro-label">📅 Meses</span>
-          <div class="chips-wrap" id="chips-mes"></div>
-        </div>
-        <div class="filtro-bloco">
-          <span class="filtro-label">🏷 Categorias</span>
-          <div class="chips-wrap" id="chips-categoria"></div>
-        </div>
-      </div>
-      <div id="grupo-filtros-resumo" class="filtro-grupo d-none">
-        <div class="filtro-bloco">
-          <span class="filtro-label">🗂 Tipo</span>
-          <div class="chips-wrap" id="chips-resumo-tipo"></div>
-        </div>
-        <div class="filtro-bloco">
-          <span class="filtro-label">📂 Categoria</span>
-          <div class="chips-wrap" id="chips-resumo-cat"></div>
-        </div>
-      </div>
-      <div style="display:none">
-        <select id="filtro-mes" multiple></select>
-        <select id="filtro-categoria" multiple></select>
-        <select id="filtro-resumo-tipo" multiple></select>
-        <select id="filtro-resumo-cat" multiple></select>
-      </div>
-      <button class="btn btn-outline-danger btn-limpar-filtros ms-auto" onclick="redefinirFiltros()">✕ Limpar</button>
-    </div>
-  </div>
-
-  <!-- Abas -->
-  <div class="abas-fixas">
-    <ul class="nav nav-pills d-inline-flex border p-1 rounded bg-light" id="pills-tab" role="tablist">
-      <li class="nav-item">
-        <button class="nav-link nav-link-sm active" id="tab-lancamentos" data-bs-toggle="pill" data-bs-target="#painel-lancamentos" type="button" onclick="alternarEscopoPainel('lancamentos')">Gerais</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link nav-link-sm" id="tab-cartao" data-bs-toggle="pill" data-bs-target="#painel-cartao" type="button" onclick="alternarEscopoPainel('cartao')">Cartão</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" type="button" onclick="alternarEscopoPainel('resumo')">🎯 Planejado/Resumo</button>
-      </li>
-    </ul>
-  </div>
-
-  <div class="conteudo-principal">
-
-    <!-- Gráfico -->
-    <div class="container-card mb-3 py-2">
-      <div id="header-grafico-titulo" class="text-muted fw-bold mb-2" style="font-size:0.85rem;">EVOLUÇÃO DOS SUBTOTAIS</div>
-      <div class="row">
-        <div class="col-12" id="col-grafico-principal">
-          <div class="chart-container"><canvas id="graficoSubtotais"></canvas></div>
-        </div>
-        <div class="col-md-6 d-none" id="col-grafico-pizza">
-          <div class="chart-container"><canvas id="graficoPizzaResumo"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tab-content">
-
-      <!-- Aba: Gerais -->
-      <div class="tab-pane fade show active" id="painel-lancamentos">
-        <div class="container-card">
-          <div id="loading-lancamentos" class="loading text-secondary"><div class="spinner-border spinner-border-sm text-primary"></div> Carregando...</div>
-          <div id="container-lancamentos" class="table-responsive d-none">
-            <table class="table table-sm table-bordered align-middle m-0" style="width:100%;">
-              <thead id="header-lancamentos"></thead><tbody id="body-lancamentos"></tbody><tfoot id="footer-lancamentos"></tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Aba: Cartão -->
-      <div class="tab-pane fade" id="painel-cartao">
-        <div class="container-card">
-          <div id="loading-cartao" class="loading text-secondary"><div class="spinner-border spinner-border-sm text-success"></div> Carregando...</div>
-          <div id="container-cartao" class="table-responsive d-none">
-            <table class="table table-sm table-bordered align-middle m-0" style="width:100%;">
-              <thead id="header-cartao"></thead><tbody id="body-cartao"></tbody><tfoot id="footer-cartao"></tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Aba: Resumo/Planejamento -->
-      <div class="tab-pane fade" id="painel-resumo">
-        <div class="row g-2 mb-3">
-          <div class="col-md-3">
-            <div class="card-metrica" style="border-left-color:#198754;">
-              <small class="text-muted d-block fw-semibold">RENDA TOTAL PLANEJADA</small>
-              <h5 class="m-0 fw-bold text-success" id="m-total-renda">R$ 0,00</h5>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card-metrica" style="border-left-color:#0d6efd;">
-              <small class="text-muted d-block fw-semibold">DESPESA TOTAL PLANEJADA</small>
-              <h5 class="m-0 fw-bold text-dark" id="m-total-despesa">R$ 0,00</h5>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card-metrica" style="border-left-color:#dc3545;">
-              <small class="text-muted d-block fw-semibold">COMPROMETIMENTO DA RENDA</small>
-              <h5 class="m-0 fw-bold text-danger" id="m-comprometimento">0,00%</h5>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card-metrica" style="border-left-color:#6f42c1;background-color:#fbf9ff;">
-              <small class="text-muted d-block fw-semibold">SALDO LIVRE (SOBRA)</small>
-              <h5 class="m-0 fw-bold" style="color:#6f42c1;" id="m-saldo-livre">R$ 0,00</h5>
-            </div>
-          </div>
-
-          <div class="col-12">
-            <div class="container-card py-3">
-              <h5 class="mb-3">Despesas Variáveis (DV)</h5>
-              <div class="row text-center">
-                <div class="col-md-4">
-                  <p class="small text-muted mb-0">Mês Atual</p>
-                  <h4 id="m-dv-atual" class="text-danger">R$ 0,00</h4>
-                </div>
-                <div class="col-md-4">
-                  <p class="small text-muted mb-0">Mês Seguinte</p>
-                  <h4 id="m-dv-seguinte" class="text-danger">R$ 0,00</h4>
-                </div>
-                <div class="col-md-4">
-                  <p class="small text-muted mb-0">Total Previsto</p>
-                  <h4 id="m-dv-total" class="text-danger">R$ 0,00</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="container-card">
-          <div id="loading-resumo" class="loading text-secondary"><div class="spinner-border spinner-border-sm text-warning"></div> Mapeando Orçamento...</div>
-          <div id="container-resumo" class="table-responsive d-none">
-            <table class="table table-sm table-striped table-bordered align-middle m-0">
-              <thead class="table-dark">
-                <tr>
-                  <th>Fluxo</th><th>Tipo</th><th>Categoria</th><th>Descrição</th>
-                  <th class="text-end">Valor Mensal</th>
-                  <th class="text-end">% do Orçamento</th>
-                  <th class="text-end">% da Renda Total</th>
-                  <th class="text-end">Saldo da Linha</th>
-                  <th class="text-center">Linha</th>
-                </tr>
-              </thead>
-              <tbody id="body-resumo"></tbody>
-              <tfoot id="footer-resumo"></tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /tab-content -->
-  </div><!-- /conteudo-principal -->
-</div><!-- /app -->
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<script>
-// ═══════════════════════════════════════════════════════════
-// CONFIGURAÇÃO — edite estas duas constantes
-// ═══════════════════════════════════════════════════════════
-const CLIENT_ID  = "388994231044-5pc8p0stqbcprq2m3dpdoqlhqq5thim0.apps.googleusercontent.com";
-const GAS_URL    = "https://script.google.com/macros/s/SEU_DEPLOYMENT_ID/exec"; // ← preencher após publicar o GAS
-// ═══════════════════════════════════════════════════════════
-
-let ID_TOKEN_ATUAL = null;
-let DADOS_LANCAMENTOS = null, DADOS_CARTAO = null, DADOS_RESUMO = null;
-let INSTANCIA_GRAFICO = null, INSTANCIA_PIZZA = null;
-let ABA_ATIVA = 'lancamentos';
-
-// ── Google Sign-In ────────────────────────────────────────
-window.onload = function() {
-  // Tenta reaproveitar sessão salva
-  const tokenSalvo   = sessionStorage.getItem('gsi_token');
-  const nomeUsuario  = sessionStorage.getItem('gsi_nome');
-  const fotoUsuario  = sessionStorage.getItem('gsi_foto');
-
-  if (tokenSalvo) {
-    ID_TOKEN_ATUAL = tokenSalvo;
-    exibirApp(nomeUsuario, fotoUsuario);
-    return;
+  // Valida token e email
+  const email = validarToken_(token);
+  if (!email) {
+    return json_({ erro: "Token inválido ou expirado. Faça login novamente." });
+  }
+  if (!EMAILS_AUTORIZADOS.includes(email)) {
+    return json_({ erro: "Acesso negado para " + email });
   }
 
-  // Inicializa o botão Google
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID,
-    callback: handleCredentialResponse,
-    auto_select: true
-  });
-
-  google.accounts.id.renderButton(
-    document.getElementById('g_id_signin'),
-    { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 }
-  );
-};
-
-function handleCredentialResponse(response) {
-  const token   = response.credential;
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  const nome    = payload.name  || payload.email;
-  const foto    = payload.picture || '';
-
-  // Salva na sessão para não pedir login de novo ao recarregar a aba
-  sessionStorage.setItem('gsi_token', token);
-  sessionStorage.setItem('gsi_nome',  nome);
-  sessionStorage.setItem('gsi_foto',  foto);
-
-  ID_TOKEN_ATUAL = token;
-  exibirApp(nome, foto);
-}
-
-function exibirApp(nome, foto) {
-  document.getElementById('tela-login').style.display = 'none';
-  document.getElementById('app').style.display        = 'block';
-
-  document.getElementById('usuario-nome').textContent = nome || '';
-  if (foto) {
-    const img = document.getElementById('usuario-foto');
-    img.src = foto; img.style.display = 'inline-block';
-  }
-
-  ajustarAlturaHeader();
-  window.addEventListener('resize', ajustarAlturaHeader);
-
-  carregarTodosDados();
-}
-
-function sair() {
-  sessionStorage.clear();
-  google.accounts.id.disableAutoSelect();
-  location.reload();
-}
-
-// ── Chamadas ao GAS via JSONP (evita bloqueio de CORS) ───
-// O GAS não suporta headers CORS — JSONP é a solução padrão.
-// Cada chamada injeta um <script> com callback único e remove após resposta.
-let _jpCounter = 0;
-
-function chamarGAS(acao) {
-  return new Promise(function(resolve, reject) {
-    const cbName = '__jp' + (_jpCounter++);
-    const url = GAS_URL
-      + '?acao='     + encodeURIComponent(acao)
-      + '&token='    + encodeURIComponent(ID_TOKEN_ATUAL)
-      + '&callback=' + cbName;
-
-    const timeout = setTimeout(function() {
-      delete window[cbName];
-      reject(new Error('Timeout na chamada: ' + acao));
-    }, 30000);
-
-    window[cbName] = function(dados) {
-      clearTimeout(timeout);
-      delete window[cbName];
-      script.parentNode && script.parentNode.removeChild(script);
-      if (dados && dados.erro) reject(new Error(dados.erro));
-      else resolve(dados);
-    };
-
-    const script = document.createElement('script');
-    script.src = url;
-    script.onerror = function() {
-      clearTimeout(timeout);
-      delete window[cbName];
-      reject(new Error('Erro ao carregar script JSONP para: ' + acao));
-    };
-    document.head.appendChild(script);
-  });
-}
-
-async function carregarTodosDados() {
-  mostrarOverlay('Conectando ao servidor...');
-
+  // Roteia
   try {
-    mostrarOverlay('Carregando lançamentos...');
-    DADOS_LANCAMENTOS = await chamarGAS('getDadosLancamentos');
-
-    mostrarOverlay('Carregando cartão...');
-    DADOS_CARTAO = await chamarGAS('getDadosCartaoC');
-
-    mostrarOverlay('Carregando resumo...');
-    DADOS_RESUMO = await chamarGAS('getDadosResumo');
-
-    mostrarOverlay('Carregando DV...');
-    const dv = await chamarGAS('getDadosDV');
-    document.getElementById('m-dv-atual').innerText    = formatarMoeda(dv.mesAtual);
-    document.getElementById('m-dv-seguinte').innerText = formatarMoeda(dv.mesSeguinte);
-    document.getElementById('m-dv-total').innerText    = formatarMoeda(dv.totalPrevisto);
-
-    esconderOverlay();
-    alimentarFiltroMeses();
-    alimentarFiltrosExclusivosResumo();
-    alternarEscopoPainel('lancamentos');
-
+    switch (acao) {
+      case "getDadosLancamentos": return json_(getDadosLancamentos());
+      case "getDadosCartaoC":     return json_(getDadosCartaoC());
+      case "getDadosResumo":      return json_(getDadosResumo());
+      case "getDadosDV":          return json_(getDadosDV());
+      default:                    return json_({ erro: "Ação desconhecida: " + acao });
+    }
   } catch (err) {
-    esconderOverlay();
-    const msgEl = document.getElementById('erro-login');
-    // Mostra o erro no topo da app de forma discreta
-    alert('Erro ao carregar dados: ' + err.message);
-    console.error(err);
+    return json_({ erro: err.message });
   }
 }
 
-// ── Overlay ───────────────────────────────────────────────
-function mostrarOverlay(msg) {
-  document.getElementById('overlay-carregando').style.display = 'flex';
-  document.getElementById('overlay-msg').textContent = msg;
-}
-function esconderOverlay() {
-  document.getElementById('overlay-carregando').style.display = 'none';
+function json_(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ── Sticky heights ────────────────────────────────────────
-function ajustarAlturaHeader() {
-  const header  = document.querySelector('.app-header');
-  const filtros = document.querySelector('.filtros-topo');
-  if (header)  document.documentElement.style.setProperty('--altura-header', header.getBoundingClientRect().height + 'px');
-  if (filtros) {
-    const hFiltros = filtros.getBoundingClientRect().height;
-    const hHeader  = header  ? header.getBoundingClientRect().height : 0;
-    document.documentElement.style.setProperty('--altura-filtros-total', (hHeader + hFiltros) + 'px');
+// ── VALIDAÇÃO DO TOKEN ────────────────────────────────────
+function validarToken_(idToken) {
+  if (!idToken) return null;
+  try {
+    const resp = UrlFetchApp.fetch(
+      "https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(idToken),
+      { muteHttpExceptions: true }
+    );
+    if (resp.getResponseCode() !== 200) return null;
+    const payload = JSON.parse(resp.getContentText());
+    if (payload.aud !== GOOGLE_CLIENT_ID) return null;
+    if (payload.exp && parseInt(payload.exp) < Math.floor(Date.now() / 1000)) return null;
+    return payload.email || null;
+  } catch (err) {
+    return null;
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// TODA A LÓGICA DE FILTROS, TABELAS E GRÁFICOS
-// (idêntica ao original — sem google.script.run)
-// ══════════════════════════════════════════════════════════
+// ==========================================================
+// FUNÇÕES DE DADOS
+// ==========================================================
 
-function formatarMoeda(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+function getDadosLancamentos() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheetLanc   = ss.getSheetByName("lancamentos");
+  const sheetSaldos = ss.getSheetByName("saldos");
+  if (!sheetLanc)   throw new Error("Aba 'lancamentos' não encontrada.");
+  if (!sheetSaldos) throw new Error("Aba 'saldos' não encontrada.");
 
-// ── Chips ─────────────────────────────────────────────────
-function renderizarChips(containerId, valores, classeAtivo, onToggle) {
-  const wrap = document.getElementById(containerId);
-  wrap.innerHTML = '';
-  valores.forEach(val => {
-    const chip = document.createElement('span');
-    chip.className = 'chip';
-    chip.textContent = val;
-    chip.dataset.valor = val;
-    chip.addEventListener('click', () => {
-      chip.classList.toggle(classeAtivo);
-      sincronizarSelectOculto(containerId, classeAtivo);
-      onToggle();
+  var unificados = [];
+
+  var lastLanc = sheetLanc.getLastRow();
+  if (lastLanc >= 4) {
+    sheetLanc.getRange(4, 2, lastLanc - 3, 6).getValues().forEach(function(row, i) {
+      unificados.push({ linhaOriginal: i + 4, abaOrigem: "lancamentos", colunas: row });
     });
-    wrap.appendChild(chip);
-  });
-}
-
-function sincronizarSelectOculto(chipsContainerId, classeAtivo) {
-  const mapa = { 'chips-mes':'filtro-mes', 'chips-categoria':'filtro-categoria', 'chips-resumo-tipo':'filtro-resumo-tipo', 'chips-resumo-cat':'filtro-resumo-cat' };
-  const selectId = mapa[chipsContainerId];
-  if (!selectId) return;
-  const select = document.getElementById(selectId);
-  const ativos = Array.from(document.querySelectorAll(`#${chipsContainerId} .${classeAtivo}`)).map(c => c.dataset.valor);
-  Array.from(select.options).forEach(opt => { opt.selected = ativos.includes(opt.value); });
-}
-
-function ativarChip(containerId, valor, classeAtivo) {
-  const chip = document.querySelector(`#${containerId} [data-valor="${valor}"]`);
-  if (chip) chip.classList.add(classeAtivo);
-}
-
-function limparChips(containerId, classeAtivo) {
-  document.querySelectorAll(`#${containerId} .chip`).forEach(c => c.classList.remove(classeAtivo));
-}
-
-function getChipsAtivos(containerId, classeAtivo) {
-  return Array.from(document.querySelectorAll(`#${containerId} .${classeAtivo}`)).map(c => c.dataset.valor);
-}
-
-function alimentarFiltroMeses() {
-  const mesesSet = new Set();
-  [DADOS_LANCAMENTOS, DADOS_CARTAO].forEach(d => { if (d && d.meses) d.meses.forEach(m => mesesSet.add(m.mesAno)); });
-  const mesesOrdenados = Array.from(mesesSet).sort((a, b) => {
-    const [mA, aA] = a.split('/'), [mB, aB] = b.split('/');
-    return new Date(aA, mA - 1) - new Date(aB, mB - 1);
-  });
-  const selectMes = document.getElementById('filtro-mes');
-  selectMes.innerHTML = '';
-  mesesOrdenados.forEach(mes => selectMes.options.add(new Option(mes, mes)));
-  renderizarChips('chips-mes', mesesOrdenados, 'ativo-azul', aplicarFiltros);
-}
-
-function alimentarFiltrosExclusivosResumo(reconstruirApenasCategorias = false) {
-  if (!DADOS_RESUMO) return;
-  const tiposAtivos = getChipsAtivos('chips-resumo-tipo', 'ativo-roxo');
-  const catsAtivas  = getChipsAtivos('chips-resumo-cat',  'ativo-roxo');
-  const todosOsItens = [...DADOS_RESUMO.rendas, ...DADOS_RESUMO.despesas];
-
-  if (!reconstruirApenasCategorias) {
-    const tiposSet = new Set();
-    todosOsItens.forEach(item => tiposSet.add(item.tipo));
-    const tipos = Array.from(tiposSet).sort();
-    const selectTipo = document.getElementById('filtro-resumo-tipo');
-    selectTipo.innerHTML = '';
-    tipos.forEach(t => selectTipo.options.add(new Option(t, t)));
-    renderizarChips('chips-resumo-tipo', tipos, 'ativo-roxo', () => { alimentarFiltrosExclusivosResumo(true); calcularOrcamentoResumo(); });
-    tiposAtivos.forEach(t => ativarChip('chips-resumo-tipo', t, 'ativo-roxo'));
   }
 
-  const catsSet = new Set();
-  const tiposFiltradosAgora = getChipsAtivos('chips-resumo-tipo', 'ativo-roxo');
-  todosOsItens.forEach(item => { if (tiposFiltradosAgora.length === 0 || tiposFiltradosAgora.includes(item.tipo)) catsSet.add(item.categoria); });
-  const cats = Array.from(catsSet).sort();
-  const selectCat = document.getElementById('filtro-resumo-cat');
-  selectCat.innerHTML = '';
-  cats.forEach(c => selectCat.options.add(new Option(c, c)));
-  renderizarChips('chips-resumo-cat', cats, 'ativo-roxo', calcularOrcamentoResumo);
-  catsAtivas.forEach(c => ativarChip('chips-resumo-cat', c, 'ativo-roxo'));
-}
-
-function alternarEscopoPainel(novaAba) {
-  ABA_ATIVA = novaAba;
-  if (ABA_ATIVA === 'resumo') {
-    document.getElementById('grupo-filtros-historico').classList.add('d-none');
-    document.getElementById('grupo-filtros-resumo').classList.remove('d-none');
-    document.getElementById('col-grafico-principal').className = "col-md-6";
-    document.getElementById('col-grafico-pizza').classList.remove('d-none');
-    document.getElementById('header-grafico-titulo').innerText = "VISTA PLANEJAMENTO: DESPESAS VS RENDAS";
-    setTimeout(ajustarAlturaHeader, 50);
-    calcularOrcamentoResumo();
-  } else {
-    document.getElementById('grupo-filtros-historico').classList.remove('d-none');
-    document.getElementById('grupo-filtros-resumo').classList.add('d-none');
-    document.getElementById('col-grafico-principal').className = "col-12";
-    document.getElementById('col-grafico-pizza').classList.add('d-none');
-    document.getElementById('header-grafico-titulo').innerText = "EVOLUÇÃO DOS SUBTOTAIS (VISTA ATUAL)";
-    setTimeout(ajustarAlturaHeader, 50);
-    const dadosEscopo = (ABA_ATIVA === 'lancamentos') ? DADOS_LANCAMENTOS : DADOS_CARTAO;
-    const selectCat = document.getElementById('filtro-categoria');
-    selectCat.innerHTML = '';
-    if (dadosEscopo && dadosEscopo.categorias) {
-      dadosEscopo.categorias.forEach(cat => selectCat.options.add(new Option(cat, cat)));
-      renderizarChips('chips-categoria', dadosEscopo.categorias, 'ativo-azul', aplicarFiltros);
-    }
-    aplicarFiltros();
-  }
-}
-
-function obterValoresMultiselect(id) { return Array.from(document.getElementById(id).selectedOptions).map(o => o.value); }
-
-function redefinirFiltros() {
-  if (ABA_ATIVA === 'resumo') {
-    limparChips('chips-resumo-tipo', 'ativo-roxo');
-    limparChips('chips-resumo-cat',  'ativo-roxo');
-    document.getElementById('filtro-resumo-tipo').selectedIndex = -1;
-    document.getElementById('filtro-resumo-cat').selectedIndex  = -1;
-    alimentarFiltrosExclusivosResumo(false);
-    calcularOrcamentoResumo();
-  } else {
-    limparChips('chips-mes',       'ativo-azul');
-    limparChips('chips-categoria', 'ativo-azul');
-    document.getElementById('filtro-mes').selectedIndex       = -1;
-    document.getElementById('filtro-categoria').selectedIndex = -1;
-    aplicarFiltros();
-  }
-}
-
-function aplicarFiltros() {
-  const meses      = obterValoresMultiselect('filtro-mes');
-  const categorias = obterValoresMultiselect('filtro-categoria');
-  renderizarTabelaGenerica('lancamentos', DADOS_LANCAMENTOS, meses, categorias, 'text-primary');
-  renderizarTabelaGenerica('cartao',      DADOS_CARTAO,      meses, categorias, 'text-success');
-  atualizarGraficoBaseadoNaTela();
-}
-
-function renderizarTabelaGenerica(sufixoId, dadosCrus, mesesFiltro, categoriasFiltro, corDestaqueClasse) {
-  if (!dadosCrus) return;
-  const container = document.getElementById(`container-${sufixoId}`),
-        cabecalho = document.getElementById(`header-${sufixoId}`),
-        corpo     = document.getElementById(`body-${sufixoId}`),
-        rodape    = document.getElementById(`footer-${sufixoId}`);
-  document.getElementById(`loading-${sufixoId}`).classList.add('d-none');
-
-  const colunasVisiveis = dadosCrus.categorias.filter(c => categoriasFiltro.length === 0 || categoriasFiltro.includes(c));
-  let colGroupHTML = `<col style="width:260px">`;
-  colunasVisiveis.forEach(() => colGroupHTML += `<col style="width:120px">`);
-  colGroupHTML += `<col style="width:120px"><col style="width:150px">`;
-  const colGroup = `<colgroup>${colGroupHTML}</colgroup>`;
-  const tabelaMae = cabecalho.closest('table');
-  const cgAntigo  = tabelaMae.querySelector('colgroup');
-  if (cgAntigo) cgAntigo.remove();
-  tabelaMae.insertAdjacentHTML('afterbegin', colGroup);
-  tabelaMae.style.tableLayout = 'fixed';
-
-  let htmlHead = `<tr><th class="coluna-fixa-largura">Mês/Ano</th>`;
-  colunasVisiveis.forEach(c => htmlHead += `<th class="text-end">${c}</th>`);
-  htmlHead += `<th class="text-end">Saldo da Linha</th><th class="text-end">Acumulado Histórico</th></tr>`;
-  cabecalho.innerHTML = htmlHead;
-
-  let htmlBody = '';
-  const totaisColunas = {};
-  colunasVisiveis.forEach(c => totaisColunas[c] = 0);
-  let acumuladorSaldoGeralAbas = 0;
-
-  dadosCrus.meses.forEach((mesData, idx) => {
-    if (mesesFiltro.length > 0 && !mesesFiltro.includes(mesData.mesAno)) return;
-    const idDinamica = `gaveta-${sufixoId}-${idx}`;
-    const agora = new Date();
-    const mesAtualChave = `${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
-    const ehMesAtual = mesData.mesAno === mesAtualChave;
-
-    let totalHorizontalLinhaMae = 0;
-    colunasVisiveis.forEach(c => { totalHorizontalLinhaMae += (mesData.valoresPorCategoria[c] || 0); });
-    acumuladorSaldoGeralAbas += totalHorizontalLinhaMae;
-
-    htmlBody += `<tr class="linha-mae${ehMesAtual ? ' linha-mes-atual' : ''}" onclick="alternarSlider('${idDinamica}')">`;
-    htmlBody += `<td class="coluna-fixa-largura"><strong class="${corDestaqueClasse}">${mesData.mesAno}</strong>${ehMesAtual ? ' <span class="badge bg-warning text-dark" style="font-size:0.65rem;vertical-align:middle;">hoje</span>' : ''}<span class="indicador-click"> ⬘</span></td>`;
-    colunasVisiveis.forEach(c => {
-      const val = mesData.valoresPorCategoria[c] || 0; totaisColunas[c] += val;
-      htmlBody += `<td class="text-end ${val > 0 ? 'text-success fw-bold' : (val < 0 ? 'text-danger fw-bold' : 'text-muted')}">${formatarMoeda(val)}</td>`;
+  var lastSaldos = sheetSaldos.getLastRow();
+  if (lastSaldos >= 2) {
+    sheetSaldos.getRange(2, 2, lastSaldos - 1, 6).getValues().forEach(function(row, i) {
+      unificados.push({ linhaOriginal: i + 2, abaOrigem: "saldos", colunas: row });
     });
-    htmlBody += `<td class="text-end fw-bold ${totalHorizontalLinhaMae >= 0 ? 'text-success' : 'text-danger'}">${formatarMoeda(totalHorizontalLinhaMae)}</td>`;
-    htmlBody += `<td class="text-end fw-bold ${acumuladorSaldoGeralAbas >= 0 ? 'text-success' : 'text-danger'}" style="background-color:#f8fafc;">${formatarMoeda(acumuladorSaldoGeralAbas)}</td>`;
-    htmlBody += `</tr>`;
-
-    htmlBody += `<tr id="${idDinamica}" class="linha-detalhe">`;
-    htmlBody += `<td colspan="${colunasVisiveis.length + 3}" style="padding:0!important;border:none!important;">`;
-    htmlBody += `<div class="slider-conteudo" id="${idDinamica}-conteudo">`;
-    htmlBody += `<table class="tabela-filha"><colgroup>${colGroupHTML}</colgroup><tbody>`;
-
-    if (mesData.detalhes) {
-      mesData.detalhes.forEach(reg => {
-        if (categoriasFiltro.length > 0 && !categoriasFiltro.includes(reg.categoria)) return;
-        htmlBody += `<tr>`;
-        htmlBody += `<td style="text-align:left!important;" title="#${reg.linhaPlanilha} — ${reg.data} — ${reg.descricao}">`;
-        htmlBody += `<small class="text-muted font-monospace me-1">#${reg.linhaPlanilha}</small>`;
-        htmlBody += `<strong class="me-1">${reg.data}</strong>`;
-        htmlBody += `<span>${reg.descricao}</span>`;
-        htmlBody += `</td>`;
-        colunasVisiveis.forEach(c => {
-          if (reg.categoria === c) {
-            htmlBody += `<td class="text-end fw-semibold ${reg.valor > 0 ? 'text-success' : 'text-danger'}">${formatarMoeda(reg.valor)}</td>`;
-          } else {
-            htmlBody += `<td class="text-end text-muted" style="color:#ccc!important">-</td>`;
-          }
-        });
-        htmlBody += `<td class="text-end fw-bold ${reg.valor >= 0 ? 'text-success' : 'text-danger'}">${formatarMoeda(reg.valor)}</td>`;
-        htmlBody += `<td class="text-end text-muted" style="color:#ccc!important">-</td>`;
-        htmlBody += `</tr>`;
-      });
-    }
-    htmlBody += `</tbody></table></div></td></tr>`;
-  });
-  corpo.innerHTML = htmlBody;
-
-  let htmlFoot = `<tr><td class="coluna-fixa-largura">TOTAL GERAL</td>`;
-  colunasVisiveis.forEach(c => htmlFoot += `<td class="text-end ${totaisColunas[c] >= 0 ? 'text-success' : 'text-danger'}">${formatarMoeda(totaisColunas[c])}</td>`);
-  htmlFoot += `<td class="text-end bg-dark text-white fw-bold border-start border-2">${formatarMoeda(acumuladorSaldoGeralAbas)}</td>`;
-  htmlFoot += `<td class="text-end text-muted font-monospace fw-normal" style="background-color:#e9ecef;">-</td></tr>`;
-  rodape.innerHTML = htmlFoot;
-
-  container.classList.remove('d-none');
-}
-
-function calcularOrcamentoResumo() {
-  if (!DADOS_RESUMO) return;
-  document.getElementById('loading-resumo').classList.add('d-none');
-  document.getElementById('container-resumo').classList.remove('d-none');
-
-  const tiposFiltrados = obterValoresMultiselect('filtro-resumo-tipo');
-  const catsFiltradas  = obterValoresMultiselect('filtro-resumo-cat');
-
-  let rendaTotalBase    = 0, despesaTotalBase   = 0;
-  let totalRendasFiltradas = 0, totalDespesasFiltradas = 0;
-  const pizzaTipos = {}, pizzaCats = {};
-  let htmlBody = "";
-
-  DADOS_RESUMO.rendas.forEach(r => rendaTotalBase    += r.valor);
-  DADOS_RESUMO.despesas.forEach(d => despesaTotalBase += d.valor);
-
-  DADOS_RESUMO.rendas.forEach(item => {
-    if (tiposFiltrados.length > 0 && !tiposFiltrados.includes(item.tipo)) return;
-    if (catsFiltradas.length  > 0 && !catsFiltradas.includes(item.categoria)) return;
-    totalRendasFiltradas += item.valor;
-    pizzaTipos[item.tipo] = (pizzaTipos[item.tipo] || 0) + item.valor;
-    pizzaCats[item.categoria] = (pizzaCats[item.categoria] || 0) + item.valor;
-    const saldoLinha = item.valor;
-    htmlBody += `<tr class="table-success" style="opacity:0.9;">
-      <td><strong class="text-success">➕ ENTRADA</strong></td>
-      <td><span class="badge bg-success">${item.tipo}</span></td>
-      <td><strong>${item.categoria}</strong></td>
-      <td><span class="text-dark">${item.descricao}</span></td>
-      <td class="text-end fw-bold text-success">${formatarMoeda(item.valor)}</td>
-      <td class="text-end text-muted">-</td>
-      <td class="text-end text-muted">-</td>
-      <td class="text-end fw-bold text-success">${formatarMoeda(saldoLinha)}</td>
-      <td class="text-center text-muted"><small>#F${item.linhaPlanilha}</small></td>
-    </tr>`;
-  });
-
-  DADOS_RESUMO.despesas.forEach(item => {
-    if (tiposFiltrados.length > 0 && !tiposFiltrados.includes(item.tipo)) return;
-    if (catsFiltradas.length  > 0 && !catsFiltradas.includes(item.categoria)) return;
-    totalDespesasFiltradas += item.valor;
-    pizzaTipos[item.tipo] = (pizzaTipos[item.tipo] || 0) + item.valor;
-    pizzaCats[item.categoria] = (pizzaCats[item.categoria] || 0) + item.valor;
-    const pOrcamentoNum = despesaTotalBase > 0 ? (item.valor / despesaTotalBase) * 100 : 0;
-    const pRendaNum     = rendaTotalBase   > 0 ? (item.valor / rendaTotalBase)   * 100 : 0;
-    const pOrcamento    = pOrcamentoNum.toFixed(1) + '%';
-    const corBarra      = pRendaNum <= 10 ? '#198754' : pRendaNum <= 25 ? '#ffc107' : '#dc3545';
-    const barraPorcentagem = `<div class="progresso-wrap">
-      <div class="progresso-trilho"><div class="progresso-barra" style="width:${Math.min(pRendaNum,100)}%;background:${corBarra};"></div></div>
-      <span class="progresso-label" style="color:${corBarra};">${pRendaNum.toFixed(1)}%</span>
-    </div>`;
-    htmlBody += `<tr>
-      <td><strong class="text-danger">➖ SAÍDA</strong></td>
-      <td><span class="badge ${item.tipo === 'FIXA' ? 'bg-primary' : 'bg-warning text-dark'}">${item.tipo}</span></td>
-      <td><strong>${item.categoria}</strong></td>
-      <td><span class="text-secondary">${item.descricao}</span></td>
-      <td class="text-end fw-bold text-dark">${formatarMoeda(item.valor)}</td>
-      <td class="text-end text-muted">${pOrcamento}</td>
-      <td>${barraPorcentagem}</td>
-      <td class="text-end fw-bold text-danger">${formatarMoeda(-item.valor)}</td>
-      <td class="text-center text-muted"><small>#A${item.linhaPlanilha}</small></td>
-    </tr>`;
-  });
-
-  document.getElementById('body-resumo').innerHTML = htmlBody;
-
-  const saldoLiquidoFiltrado = totalRendasFiltradas - totalDespesasFiltradas;
-  const pOrcamentoTotal = despesaTotalBase > 0 ? ((totalDespesasFiltradas / despesaTotalBase) * 100).toFixed(1) + '%' : '100%';
-  const pRendaTotal     = rendaTotalBase   > 0 ? ((totalDespesasFiltradas / rendaTotalBase)   * 100).toFixed(1) + '%' : '0.0%';
-
-  document.getElementById('footer-resumo').innerHTML = `
-    <tr class="table-light border-top-2">
-      <td colspan="4"><strong>💰 TOTAL ENTRADAS FILTRADAS</strong></td>
-      <td class="text-end fw-bold text-success">${formatarMoeda(totalRendasFiltradas)}</td>
-      <td colspan="4" class="bg-light"></td>
-    </tr>
-    <tr class="table-light">
-      <td colspan="4"><strong>💸 TOTAL SAÍDAS FILTRADAS</strong></td>
-      <td class="text-end fw-bold text-dark">${formatarMoeda(totalDespesasFiltradas)}</td>
-      <td class="text-end text-muted fw-bold">${pOrcamentoTotal}</td>
-      <td class="text-end text-primary font-monospace fw-bold">${pRendaTotal}</td>
-      <td colspan="2" class="bg-light"></td>
-    </tr>
-    <tr class="${saldoLiquidoFiltrado >= 0 ? 'table-success' : 'table-danger'}">
-      <td colspan="7"><strong>📊 SALDO LÍQUIDO (SOBRA HORIZONTAL TOTAL)</strong></td>
-      <td class="text-end fw-bold ${saldoLiquidoFiltrado >= 0 ? 'text-success' : 'text-danger'}" style="font-size:1rem;">${formatarMoeda(saldoLiquidoFiltrado)}</td>
-      <td class="text-center fw-bold text-muted" style="font-size:0.8rem;">
-        ${rendaTotalBase > 0 && saldoLiquidoFiltrado >= 0 ? ((saldoLiquidoFiltrado / rendaTotalBase) * 100).toFixed(1) + '% da Renda' : ''}
-      </td>
-    </tr>`;
-
-  const sobraAbsoluta  = rendaTotalBase - despesaTotalBase;
-  const percentSobra   = rendaTotalBase > 0 ? ((sobraAbsoluta / rendaTotalBase) * 100).toFixed(1) : '0.0';
-  document.getElementById('m-total-renda').innerText      = formatarMoeda(rendaTotalBase);
-  document.getElementById('m-total-despesa').innerText    = formatarMoeda(despesaTotalBase);
-  document.getElementById('m-comprometimento').innerText  = rendaTotalBase > 0 ? ((despesaTotalBase / rendaTotalBase) * 100).toFixed(1) + '%' : '0.0%';
-  document.getElementById('m-saldo-livre').innerHTML      = `${formatarMoeda(sobraAbsoluta)} <span class="fs-6 fw-semibold" style="color:#6f42c1;">(${percentSobra}%)</span>`;
-
-  renderizarGraficosPizzaResumo(pizzaTipos, pizzaCats);
-}
-
-function renderizarGraficosPizzaResumo(dadosTipo, dadosCat) {
-  const paletaCores = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#fd7e14','#0dcaf0','#e83e8c','#20c997'];
-  const ctxPrincipal = document.getElementById('graficoSubtotais').getContext('2d');
-  if (INSTANCIA_GRAFICO) INSTANCIA_GRAFICO.destroy();
-  INSTANCIA_GRAFICO = new Chart(ctxPrincipal, {
-    type: 'doughnut',
-    data: { labels: Object.keys(dadosTipo), datasets: [{ data: Object.values(dadosTipo), backgroundColor: paletaCores }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'left' }, title: { display: true, text: 'Visão por Tipo' } } }
-  });
-  const ctxPizza = document.getElementById('graficoPizzaResumo').getContext('2d');
-  if (INSTANCIA_PIZZA) INSTANCIA_PIZZA.destroy();
-  INSTANCIA_PIZZA = new Chart(ctxPizza, {
-    type: 'pie',
-    data: { labels: Object.keys(dadosCat), datasets: [{ data: Object.values(dadosCat), backgroundColor: [...paletaCores].reverse() }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } }, title: { display: true, text: 'Visão por Categorias' } } }
-  });
-}
-
-function atualizarGraficoBaseadoNaTela() {
-  if (ABA_ATIVA === 'resumo') return;
-  const dadosAtuais     = (ABA_ATIVA === 'lancamentos') ? DADOS_LANCAMENTOS : DADOS_CARTAO;
-  const mesesFiltro     = obterValoresMultiselect('filtro-mes');
-  const categoriasFiltro = obterValoresMultiselect('filtro-categoria');
-  if (!dadosAtuais || !dadosAtuais.meses) return;
-  const mesesFiltrados   = dadosAtuais.meses.filter(m => mesesFiltro.length === 0 || mesesFiltro.includes(m.mesAno));
-  const categoriesVisiveis = dadosAtuais.categorias.filter(c => categoriasFiltro.length === 0 || categoriasFiltro.includes(c));
-  const labelsX          = mesesFiltrados.map(m => m.mesAno);
-  const paletaCores      = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#fd7e14','#0dcaf0','#e83e8c'];
-  const datasets         = categoriesVisiveis.map((cat, i) => ({
-    label: cat, data: mesesFiltrados.map(m => m.valoresPorCategoria[cat] || 0),
-    backgroundColor: paletaCores[i % paletaCores.length], borderRadius: 4
-  }));
-  const ctx = document.getElementById('graficoSubtotais').getContext('2d');
-  if (INSTANCIA_GRAFICO) INSTANCIA_GRAFICO.destroy();
-  INSTANCIA_GRAFICO = new Chart(ctx, {
-    type: 'bar', data: { labels: labelsX, datasets: datasets },
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
-  });
-}
-
-function alternarSlider(id) {
-  const row = document.getElementById(id);
-  const box = document.getElementById(id + '-conteudo');
-  if (!row || !box) return;
-  if (row.style.display === 'table-row') {
-    box.style.maxHeight = '0px';
-    setTimeout(() => { row.style.display = 'none'; }, 300);
-  } else {
-    row.style.display = 'table-row';
-    box.style.maxHeight = box.scrollHeight + 'px';
   }
+
+  if (unificados.length === 0) return { meses: [], categorias: [] };
+
+  var mensais = {}, detalhes = {}, cats = {};
+
+  unificados.forEach(function(item) {
+    var l    = item.colunas;
+    var data = fixDate_(l[0]);
+    var desc = l[1];
+    var val  = fixNum_(l[2]);
+    var cat  = l[4];
+
+    if (!(data instanceof Date) || isNaN(data)) return;
+
+    var categoria = cat  ? String(cat).trim()  : "Sem Categoria";
+    var descricao = desc ? String(desc).trim() : "Sem descrição";
+    var ano  = data.getFullYear();
+    var mes  = pad_(data.getMonth() + 1);
+    var chave = ano + "-" + mes;
+
+    cats[categoria] = true;
+    if (!mensais[chave]) mensais[chave] = {};
+    mensais[chave][categoria] = (mensais[chave][categoria] || 0) + val;
+    if (!detalhes[chave]) detalhes[chave] = [];
+    detalhes[chave].push({
+      linhaPlanilha: (item.abaOrigem === "saldos" ? "S" : "L") + item.linhaOriginal,
+      data: pad_(data.getDate()) + "/" + mes + "/" + ano,
+      descricao: descricao,
+      categoria: categoria,
+      valor: val
+    });
+  });
+
+  var chaves    = Object.keys(mensais).sort();
+  var catsArray = Object.keys(cats).sort();
+
+  return {
+    meses: chaves.map(function(chave) {
+      var p = chave.split('-');
+      var porCat = {};
+      catsArray.forEach(function(c) { porCat[c] = mensais[chave][c] || 0; });
+      return { chaveOrdenacao: chave, mesAno: p[1] + "/" + p[0], valoresPorCategoria: porCat, detalhes: detalhes[chave] || [] };
+    }),
+    categorias: catsArray
+  };
 }
 
-function atualizarFiltrosEmCascata() {
-  alimentarFiltrosExclusivosResumo(true);
-  calcularOrcamentoResumo();
+function getDadosCartaoC() {
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("CartaoC");
+  if (!sheet) throw new Error("Aba 'CartaoC' não encontrada.");
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return { meses: [], categorias: [] };
+
+  var hoje  = new Date();
+  var limite = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  var mensais = {}, detalhes = {}, cats = {};
+
+  sheet.getRange(2, 2, lastRow - 1, 7).getValues().forEach(function(l, i) {
+    var data = fixDate_(l[0]);
+    if (!(data instanceof Date) || isNaN(data) || data < limite) return;
+    var val  = fixNum_(l[4]);
+    var cat  = l[6] ? String(l[6]).trim() : "Sem Categoria";
+    var desc = l[1] ? String(l[1]).trim() : "Sem descrição";
+    var ano  = data.getFullYear();
+    var mes  = pad_(data.getMonth() + 1);
+    var chave = ano + "-" + mes;
+    cats[cat] = true;
+    if (!mensais[chave]) mensais[chave] = {};
+    mensais[chave][cat] = (mensais[chave][cat] || 0) + val;
+    if (!detalhes[chave]) detalhes[chave] = [];
+    detalhes[chave].push({ linhaPlanilha: i + 2, data: pad_(data.getDate()) + "/" + mes + "/" + ano, descricao: desc, categoria: cat, valor: val });
+  });
+
+  var chaves    = Object.keys(mensais).sort().slice(0, 12);
+  var catsArray = Object.keys(cats).sort();
+
+  return {
+    meses: chaves.map(function(chave) {
+      var p = chave.split('-');
+      var porCat = {};
+      catsArray.forEach(function(c) { porCat[c] = mensais[chave][c] || 0; });
+      return { chaveOrdenacao: chave, mesAno: p[1] + "/" + p[0], valoresPorCategoria: porCat, detalhes: detalhes[chave] || [] };
+    }),
+    categorias: catsArray
+  };
 }
-</script>
-</body>
-</html>
+
+function getDadosResumo() {
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("resumo");
+  if (!sheet) throw new Error("Aba 'resumo' não encontrada.");
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return { despesas: [], rendas: [] };
+
+  var despesas = [], rendas = [];
+  sheet.getRange(2, 1, lastRow - 1, 9).getValues().forEach(function(l, i) {
+    var linhaReal = i + 2;
+    var dCat = l[2] ? String(l[2]).trim() : "";
+    var dVal = fixNum_(l[3]);
+    if (dCat !== "" || dVal > 0) {
+      despesas.push({ linhaPlanilha: linhaReal, tipo: l[0] ? String(l[0]).trim().toUpperCase() : "NÃO DEFINIDO", descricao: l[1] ? String(l[1]).trim() : "Sem descrição", categoria: dCat || "Sem Categoria", valor: dVal });
+    }
+    var rCat = l[7] ? String(l[7]).trim() : "";
+    var rVal = fixNum_(l[8]);
+    if (rCat !== "" || rVal > 0) {
+      rendas.push({ linhaPlanilha: linhaReal, tipo: l[5] ? String(l[5]).trim().toUpperCase() : "RENDA", descricao: l[6] ? String(l[6]).trim() : "Sem descrição", categoria: rCat || "Sem Categoria", valor: rVal });
+    }
+  });
+  return { despesas: despesas, rendas: rendas };
+}
+
+function getDadosDV() {
+  var ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var hoje = new Date();
+  var mA   = hoje.getMonth(), aA = hoje.getFullYear();
+  var mS   = mA === 11 ? 0 : mA + 1;
+  var aS   = mA === 11 ? aA + 1 : aA;
+  var totA = 0, totS = 0;
+
+  function proc(dataCell, valorCell) {
+    var d = fixDate_(dataCell instanceof Date ? dataCell : new Date(dataCell));
+    if (!(d instanceof Date) || isNaN(d)) return;
+    var v = fixNum_(valorCell);
+    if (d.getMonth() === mA && d.getFullYear() === aA) totA += v;
+    else if (d.getMonth() === mS && d.getFullYear() === aS) totS += v;
+  }
+
+  var sBkp = ss.getSheetByName("bkp");
+  if (sBkp && sBkp.getLastRow() >= 2) {
+    sBkp.getRange(2, 1, sBkp.getLastRow() - 1, 10).getValues().forEach(function(l) {
+      if (String(l[9] || "").trim().toUpperCase() === "DV") proc(l[0], l[6]);
+    });
+  }
+
+  var sLanc = ss.getSheetByName("lancamentos");
+  if (sLanc && sLanc.getLastRow() >= 4) {
+    sLanc.getRange(4, 2, sLanc.getLastRow() - 3, 7).getValues().forEach(function(l) {
+      if (String(l[6] || "").trim().toUpperCase() === "DV") proc(l[0], l[2]);
+    });
+  }
+
+  var sCart = ss.getSheetByName("CartaoC");
+  if (sCart && sCart.getLastRow() >= 2) {
+    sCart.getRange(2, 2, sCart.getLastRow() - 1, 6).getValues().forEach(function(l) {
+      if (String(l[5] || "").trim().toUpperCase() === "DV") proc(l[0], l[4]);
+    });
+  }
+
+  return { mesAtual: totA, mesSeguinte: totS, totalPrevisto: totA + totS };
+}
+
+// ── AUXILIARES ────────────────────────────────────────────
+function fixDate_(date) {
+  if (!(date instanceof Date)) return date;
+  var tz = SpreadsheetApp.openById(SPREADSHEET_ID).getSpreadsheetTimeZone();
+  return new Date(Utilities.formatDate(date, tz, "yyyy-MM-dd'T'00:00:00"));
+}
+
+function fixNum_(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  return Number(String(val).replace('R$','').replace(/\s/g,'').replace(/\./g,'').replace(',','.')) || 0;
+}
+
+function pad_(n) {
+  return String(n).padStart(2, '0');
+}
