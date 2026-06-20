@@ -112,10 +112,17 @@
     .chip.ativo-roxo  { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; font-weight: 600; }
     .btn-limpar { font-size: 0.72rem; padding: 3px 9px; color: #94a3b8; border-color: #e2e8f0; align-self: flex-end; white-space: nowrap; }
     .btn-limpar:hover { color: var(--cor-danger); border-color: var(--cor-danger); }
-    @media (max-width: 640px) {
+    /* Filtros: toggle visível em telas estreitas OU landscape mobile */
+    @media (max-width: 640px), (max-height: 500px) and (orientation: landscape) {
       .filtros-toggle { display: flex; }
-      .filtros-corpo { display: none; padding: 0 0 10px; }
+      .filtros-corpo { display: none; padding: 0 0 8px; }
       .filtros-corpo.aberto { display: block; }
+    }
+    /* Em landscape: chips em linha única com scroll horizontal */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .filtros-corpo.aberto .filtro-grupo { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+      .filtros-corpo.aberto .chips-wrap   { flex-wrap: nowrap; overflow-x: auto; }
+      .filtros-corpo.aberto .filtro-bloco { min-width: 0; flex-shrink: 0; }
     }
 
     /* ── ABAS DESKTOP ── */
@@ -128,7 +135,8 @@
     .nav-pills .nav-link.active { background: var(--cor-azul); }
     #tab-cartao.active { background: var(--cor-verde); }
     #tab-resumo.active { background: var(--cor-roxo); }
-    @media (max-width: 640px) { .abas-fixas { display: none; } }
+    /* Esconde abas desktop em portrait mobile; mostra em landscape (bottom nav some) */
+    @media (max-width: 640px) and (orientation: portrait) { .abas-fixas { display: none; } }
 
     /* ── BOTTOM NAV (mobile) ── */
     .bottom-nav {
@@ -145,12 +153,29 @@
       border-top: 2px solid transparent; transition: all 0.15s;
     }
     .bnav-btn .icon { font-size: 1.2rem; line-height: 1; }
+    .bnav-btn .bnav-label { transition: font-size 0.2s; }
     .bnav-btn.ativo { color: var(--cor-azul); border-top-color: var(--cor-azul); }
     .bnav-btn.ativo.verde { color: var(--cor-verde); border-top-color: var(--cor-verde); }
     .bnav-btn.ativo.roxo  { color: var(--cor-roxo);  border-top-color: var(--cor-roxo);  }
-    @media (max-width: 640px) {
+    /* Portrait mobile: bottom nav visível */
+    @media (max-width: 640px) and (orientation: portrait) {
       .bottom-nav { display: block; }
       body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+    }
+    /* Landscape mobile: bottom nav some, usa abas desktop no topo */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .bottom-nav { display: none; }
+      body { padding-bottom: 0; }
+      /* Header mais compacto */
+      .app-header { height: 38px; }
+      :root { --h-header: 38px; }
+      /* Conteúdo com menos padding */
+      .conteudo-principal { padding: 8px 12px; }
+      .container-card { padding: 10px; margin-bottom: 10px; }
+      /* Gráfico menor em landscape */
+      .chart-container { height: 140px; }
+      /* Tabela mais compacta */
+      .table-responsive { max-height: 38vh; }
     }
 
     /* ── CONTEÚDO ── */
@@ -450,13 +475,13 @@
   <nav class="bottom-nav">
     <div class="bottom-nav-inner">
       <button class="bnav-btn ativo" id="bnav-lancamentos" onclick="alternarAba('lancamentos')">
-        <span class="icon">📋</span><span>Gerais</span>
+        <span class="icon">📋</span><span class="bnav-label">Gerais</span>
       </button>
       <button class="bnav-btn" id="bnav-cartao" onclick="alternarAba('cartao')">
-        <span class="icon">💳</span><span>Cartão</span>
+        <span class="icon">💳</span><span class="bnav-label">Cartão</span>
       </button>
       <button class="bnav-btn" id="bnav-resumo" onclick="alternarAba('resumo')">
-        <span class="icon">🎯</span><span>Planejado</span>
+        <span class="icon">🎯</span><span class="bnav-label">Planejado</span>
       </button>
     </div>
   </nav>
