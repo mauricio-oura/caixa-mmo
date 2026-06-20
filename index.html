@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Financeiro</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     /* ── Base ── */
@@ -56,6 +57,31 @@
     @media (max-width: 480px) { .usr-nome { display: none; } }
     .btn-sair { font-size: 0.72rem; padding: 3px 9px; color: #94a3b8; border-color: #e2e8f0; }
     .btn-sair:hover { color: var(--cor-danger); border-color: var(--cor-danger); }
+    .btn-atualizar { font-size: 0.72rem; padding: 3px 9px; color: #94a3b8; border-color: #e2e8f0; display: flex; align-items: center; gap: 4px; }
+    .btn-atualizar:hover { color: var(--cor-azul); border-color: var(--cor-azul); }
+    .btn-atualizar .icon-sync { display: inline-block; transition: transform 0.6s; }
+    .btn-atualizar.girando .icon-sync { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .cache-info { font-size: 0.68rem; color: #94a3b8; white-space: nowrap; }
+    @media (max-width: 480px) { .cache-info { display: none; } }
+    /* Toast */
+    #toast-container { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+    .toast-msg {
+      background: #1e293b; color: white; padding: 10px 18px; border-radius: 999px;
+      font-size: 0.82rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      opacity: 0; transform: translateY(10px); transition: all 0.25s;
+      pointer-events: none; white-space: nowrap;
+    }
+    .toast-msg.visivel { opacity: 1; transform: translateY(0); }
+    /* Pull to refresh */
+    #ptr-indicator {
+      position: fixed; top: var(--h-header); left: 0; right: 0; z-index: 150;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: white; border-bottom: 1px solid #e2e8f0;
+      font-size: 0.8rem; color: #64748b; font-weight: 500;
+      height: 0; overflow: hidden; transition: height 0.2s;
+    }
+    #ptr-indicator.ativo { height: 40px; }
 
     /* ── FILTROS ── */
     .filtros-topo {
@@ -262,11 +288,17 @@
       <span>Painel Financeiro</span>
     </div>
     <div class="usr-info">
+      <span class="cache-info" id="cache-info"></span>
+      <button class="btn btn-sm btn-atualizar" id="btn-atualizar" onclick="forcarAtualizacao()" title="Atualizar dados">
+        <span class="icon-sync">🔄</span><span class="d-none d-sm-inline">Atualizar</span>
+      </button>
       <img id="usr-foto" src="" style="display:none;" alt="">
       <span class="usr-nome" id="usr-nome"></span>
       <button class="btn btn-sm btn-sair" onclick="sair()">Sair</button>
     </div>
   </div>
+  <!-- Pull-to-refresh indicator -->
+  <div id="ptr-indicator">⬇ Solte para atualizar</div>
 
   <!-- Filtros -->
   <div class="filtros-topo" id="filtros-topo">
@@ -430,6 +462,8 @@
   </nav>
 
 </div><!-- /app -->
+<!-- Toast -->
+<div id="toast-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -487,6 +521,87 @@ function sair() {
 }
 
 // ══════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════
+function toast(msg, duracao) {
+  var container = document.getElementById('toast-container');
+  var el = document.createElement('div');
+  el.className = 'toast-msg';
+  el.textContent = msg;
+  container.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('visivel'); });
+  setTimeout(function(){
+    el.classList.remove('visivel');
+    setTimeout(function(){ el.parentNode && el.parentNode.removeChild(el); }, 300);
+  }, duracao || 3000);
+}
+
+// ══════════════════════════════════════════════════════════
+// FORÇAR ATUALIZAÇÃO (limpa cache e recarrega)
+// ══════════════════════════════════════════════════════════
+function forcarAtualizacao() {
+  var btn = document.getElementById('btn-atualizar');
+  btn.classList.add('girando');
+  btn.disabled = true;
+  // Limpa só o cache de dados, mantém token e preferências
+  ['lancamentos','cartao','resumo','dv'].forEach(function(k){ localStorage.removeItem('pf_cache_'+k); });
+  ABA_RENDERIZADA = {};
+  // Reseta skeletons
+  ['lancamentos','cartao','resumo'].forEach(function(id){
+    var sk = document.getElementById('sk-'+id);
+    var ct = document.getElementById('container-'+id);
+    if(sk){ sk.style.display=''; }
+    if(ct){ ct.classList.add('d-none'); }
+  });
+  carregarDados().finally(function(){
+    btn.classList.remove('girando');
+    btn.disabled = false;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// INDICADOR DE CACHE (quando foi a última atualização)
+// ══════════════════════════════════════════════════════════
+function atualizarCacheInfo() {
+  var raw = localStorage.getItem('pf_cache_lancamentos');
+  var el  = document.getElementById('cache-info');
+  if (!raw || !el) return;
+  try {
+    var ts   = JSON.parse(raw).ts;
+    var diff = Math.floor((Date.now() - ts) / 60000); // minutos
+    var txt  = diff < 1 ? 'agora mesmo' : diff < 60 ? 'há ' + diff + ' min' : 'há ' + Math.floor(diff/60) + 'h';
+    el.textContent = '🕐 ' + txt;
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+// PULL-TO-REFRESH (mobile)
+// ══════════════════════════════════════════════════════════
+(function() {
+  var startY = 0, pulling = false, LIMIAR = 80;
+  document.addEventListener('touchstart', function(e) {
+    if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; }
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e) {
+    if (!pulling) return;
+    var delta = e.touches[0].clientY - startY;
+    var ptr   = document.getElementById('ptr-indicator');
+    if (delta > 20 && window.scrollY === 0) {
+      ptr.classList.add('ativo');
+      ptr.textContent = delta > LIMIAR ? '✅ Solte para atualizar' : '⬇ Puxe para atualizar';
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    if (!pulling) return;
+    var delta  = e.changedTouches[0].clientY - startY;
+    var ptr    = document.getElementById('ptr-indicator');
+    ptr.classList.remove('ativo');
+    if (delta > LIMIAR && window.scrollY === 0) forcarAtualizacao();
+    pulling = false;
+  });
+})();
+
+// ══════════════════════════════════════════════════════════
 // CACHE localStorage
 // ══════════════════════════════════════════════════════════
 function cacheSet(key, data) {
@@ -527,6 +642,7 @@ async function carregarDados() {
     DADOS_LANCAMENTOS = cL; DADOS_CARTAO = cC; DADOS_RESUMO = cR;
     preencherDV(cD);
     iniciarUI();
+    atualizarCacheInfo();
     return;
   }
 
@@ -545,6 +661,8 @@ async function carregarDados() {
     preencherDV(dv);
     overlayHide();
     iniciarUI();
+    toast('✅ Dados atualizados às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
+    atualizarCacheInfo();
   } catch(err) {
     overlayHide();
     document.getElementById('erro-login').textContent = 'Erro: ' + err.message;
@@ -686,6 +804,9 @@ function aplicarFiltros() {
 // ══════════════════════════════════════════════════════════
 function alternarAba(aba) {
   ABA = aba;
+  // Título dinâmico
+  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro'};
+  document.title = titulos[aba] || 'Painel Financeiro';
   // Header cor
   var hdr = document.getElementById('app-header');
   hdr.className = 'app-header aba-' + aba;
@@ -938,6 +1059,8 @@ function atualizarGrafico() {
 // ══════════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════════
+setInterval(atualizarCacheInfo, 60000); // atualiza o "há X min" a cada minuto
+
 function moeda(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 function pad2(n){return String(n).padStart(2,'0');}
 </script>
