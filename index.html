@@ -6,188 +6,321 @@
   <title>Painel Financeiro</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+    /* ── Base ── */
+    :root {
+      --cor-azul: #0d6efd; --cor-verde: #198754; --cor-roxo: #6f42c1;
+      --cor-danger: #dc3545; --cor-warning: #f59e0b;
+      --h-header: 46px; --h-filtros: 60px; --h-filtros-total: 106px;
+    }
+    * { box-sizing: border-box; }
+    body { background: #f0f2f5; font-family: 'Segoe UI', system-ui, sans-serif; overflow-x: hidden; margin: 0; padding-bottom: env(safe-area-inset-bottom); }
 
-    /* ── Tela de Login ── */
+    /* ── LOGIN ── */
     #tela-login {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     }
     .login-card {
-      background: white; border-radius: 16px; padding: 48px 40px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.08); text-align: center; max-width: 380px; width: 90%;
+      background: white; border-radius: 20px; padding: 48px 40px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.3); text-align: center; width: min(380px, 92vw);
     }
-    .login-icon { font-size: 3rem; margin-bottom: 12px; }
-    .login-titulo { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-    .login-sub { font-size: 0.88rem; color: #64748b; margin-bottom: 32px; }
+    .login-icon { font-size: 3.2rem; margin-bottom: 8px; }
+    .login-titulo { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+    .login-sub { font-size: 0.85rem; color: #64748b; margin-bottom: 32px; line-height: 1.5; }
     #g_id_signin { display: flex; justify-content: center; }
-    #erro-login { font-size: 0.83rem; color: #dc3545; margin-top: 14px; min-height: 20px; }
+    #erro-login { font-size: 0.82rem; color: var(--cor-danger); margin-top: 14px; min-height: 18px; }
 
-    /* ── App ── */
+    /* ── APP ── */
     #app { display: none; }
 
-    /* ── Header ── */
+    /* ── HEADER ── */
     .app-header {
-      background: white; border-bottom: 1px solid #dee2e6; padding: 8px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      background: white; border-bottom: 1px solid #e2e8f0; padding: 0 16px;
+      height: var(--h-header); display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: background 0.3s;
     }
-    .app-header .titulo { font-weight: 700; font-size: 0.95rem; color: #1e293b; }
-    .usuario-info { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #64748b; }
-    .usuario-info img { width: 28px; height: 28px; border-radius: 50%; }
+    .app-header.aba-lancamentos { border-bottom-color: var(--cor-azul); }
+    .app-header.aba-cartao      { border-bottom-color: var(--cor-verde); }
+    .app-header.aba-resumo      { border-bottom-color: var(--cor-roxo); }
+    .header-titulo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem; color: #0f172a; }
+    .header-titulo .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--cor-azul);
+      transition: background 0.3s;
+    }
+    .aba-cartao .dot { background: var(--cor-verde); }
+    .aba-resumo .dot { background: var(--cor-roxo); }
+    .usr-info { display: flex; align-items: center; gap: 8px; }
+    .usr-info img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #e2e8f0; }
+    .usr-nome { font-size: 0.8rem; color: #64748b; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 480px) { .usr-nome { display: none; } }
+    .btn-sair { font-size: 0.72rem; padding: 3px 9px; color: #94a3b8; border-color: #e2e8f0; }
+    .btn-sair:hover { color: var(--cor-danger); border-color: var(--cor-danger); }
 
-    /* ── Filtros ── */
+    /* ── FILTROS ── */
     .filtros-topo {
-      background: #ffffff; border-bottom: 1px solid #dee2e6; padding: 10px 20px;
-      position: sticky; top: var(--h-header, 45px); z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      background: white; border-bottom: 1px solid #e2e8f0; padding: 0 16px;
+      position: sticky; top: var(--h-header); z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
+    .filtros-toggle {
+      display: none; width: 100%; padding: 10px 0; font-size: 0.82rem;
+      font-weight: 600; color: #475569; background: none; border: none;
+      text-align: left; cursor: pointer; gap: 6px; align-items: center;
+    }
+    .filtros-toggle .seta { transition: transform 0.2s; display: inline-block; }
+    .filtros-toggle.aberto .seta { transform: rotate(180deg); }
+    .filtros-corpo { padding: 10px 0; }
     .filtro-grupo { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
-    .filtro-bloco { display: flex; flex-direction: column; gap: 5px; }
-    .filtro-label { font-size: 0.68rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
-    .chips-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+    .filtro-bloco { display: flex; flex-direction: column; gap: 4px; }
+    .filtro-label { font-size: 0.66rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
     .chip {
-      display: inline-flex; align-items: center; padding: 3px 11px; border-radius: 999px;
-      font-size: 0.78rem; border: 1px solid #dee2e6; background: #f8f9fa; color: #495057;
+      display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+      font-size: 0.76rem; border: 1px solid #e2e8f0; background: #f8fafc; color: #475569;
       cursor: pointer; user-select: none; white-space: nowrap;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      transition: all 0.12s;
     }
-    .chip:hover { background: #e9ecef; }
-    .chip.ativo-azul  { background: #dbeafe; color: #1d4ed8; border-color: #3b82f6; font-weight: 600; }
-    .chip.ativo-roxo  { background: #ede9fe; color: #5b21b6; border-color: #7c3aed; font-weight: 600; }
-    .btn-limpar-filtros { font-size: 0.75rem; padding: 4px 10px; white-space: nowrap; align-self: flex-end; }
+    .chip:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .chip.ativo-azul  { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; font-weight: 600; }
+    .chip.ativo-roxo  { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; font-weight: 600; }
+    .btn-limpar { font-size: 0.72rem; padding: 3px 9px; color: #94a3b8; border-color: #e2e8f0; align-self: flex-end; white-space: nowrap; }
+    .btn-limpar:hover { color: var(--cor-danger); border-color: var(--cor-danger); }
+    @media (max-width: 640px) {
+      .filtros-toggle { display: flex; }
+      .filtros-corpo { display: none; padding: 0 0 10px; }
+      .filtros-corpo.aberto { display: block; }
+    }
 
-    /* ── Abas ── */
+    /* ── ABAS DESKTOP ── */
     .abas-fixas {
-      background: #ffffff; border-bottom: 1px solid #dee2e6; padding: 8px 20px;
-      position: sticky; top: var(--h-filtros-total, 90px); z-index: 99;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      background: white; border-bottom: 1px solid #e2e8f0; padding: 8px 16px;
+      position: sticky; top: var(--h-filtros-total); z-index: 99;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .nav-pills .nav-link { color: #64748b; font-weight: 500; font-size: 0.85rem; padding: 6px 14px; }
+    .nav-pills .nav-link.active { background: var(--cor-azul); }
+    #tab-cartao.active { background: var(--cor-verde); }
+    #tab-resumo.active { background: var(--cor-roxo); }
+    @media (max-width: 640px) { .abas-fixas { display: none; } }
+
+    /* ── BOTTOM NAV (mobile) ── */
+    .bottom-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+      background: white; border-top: 1px solid #e2e8f0;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .bottom-nav-inner { display: flex; }
+    .bnav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 10px 4px 8px; background: none; border: none; cursor: pointer;
+      font-size: 0.68rem; font-weight: 600; color: #94a3b8; gap: 3px;
+      border-top: 2px solid transparent; transition: all 0.15s;
+    }
+    .bnav-btn .icon { font-size: 1.2rem; line-height: 1; }
+    .bnav-btn.ativo { color: var(--cor-azul); border-top-color: var(--cor-azul); }
+    .bnav-btn.ativo.verde { color: var(--cor-verde); border-top-color: var(--cor-verde); }
+    .bnav-btn.ativo.roxo  { color: var(--cor-roxo);  border-top-color: var(--cor-roxo);  }
+    @media (max-width: 640px) {
+      .bottom-nav { display: block; }
+      body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
     }
 
-    /* ── Conteúdo ── */
-    .conteudo-principal { padding: 16px 20px; }
-    .container-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 20px; }
-    .loading { font-size: 1.1rem; font-weight: 500; text-align: center; margin: 30px 0; }
-    .table-responsive { max-height: 48vh; overflow: auto; border: 1px solid #dee2e6; border-radius: 6px; }
-    thead th { position: sticky; top: 0; z-index: 3; background-color: #212529 !important; color: #fff !important; }
-    tfoot tr td { position: sticky; bottom: 0; z-index: 3; background-color: #e9ecef !important; font-weight: bold; border-top: 2px solid #6c757d !important; }
-    .coluna-fixa-largura { width: 260px !important; min-width: 260px !important; max-width: 260px !important; }
-    table td:first-child, table th:first-child { position: sticky; left: 0; z-index: 2; background-color: #fff; border-right: 2px solid #dee2e6 !important; }
+    /* ── CONTEÚDO ── */
+    .conteudo-principal { padding: 14px 16px; }
+    .container-card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px; }
+    @media (max-width: 640px) { .conteudo-principal { padding: 10px 10px; } .container-card { padding: 12px; border-radius: 10px; } }
+
+    /* ── SKELETON LOADING ── */
+    .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .sk-linha { height: 14px; margin-bottom: 10px; }
+    .sk-titulo { height: 20px; width: 40%; margin-bottom: 16px; }
+
+    /* ── GRÁFICO ── */
+    .chart-container { position: relative; height: 220px; width: 100%; }
+    @media (max-width: 640px) { .chart-container { height: 180px; } }
+
+    /* ── TABELAS DESKTOP ── */
+    .table-responsive { max-height: 52vh; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+    thead th { position: sticky; top: 0; z-index: 3; background: #1e293b !important; color: #fff !important; font-size: 0.8rem !important; padding: 10px 12px !important; }
+    tfoot tr td { position: sticky; bottom: 0; z-index: 3; background: #f1f5f9 !important; font-weight: 700; border-top: 2px solid #94a3b8 !important; font-size: 0.85rem !important; }
+    .coluna-fixa { width: 200px !important; min-width: 200px !important; max-width: 200px !important; }
+    table td:first-child, table th:first-child { position: sticky; left: 0; z-index: 2; background: white; border-right: 2px solid #e2e8f0 !important; }
     table th:first-child, tfoot tr td:first-child { z-index: 4; }
-    table th:first-child { background-color: #212529 !important; }
-    tfoot tr td:first-child { background-color: #e9ecef !important; }
-    tbody tr.linha-mae:hover td { background-color: #f1f3f5 !important; cursor: pointer; }
-    th, td { white-space: nowrap; padding: 8px 12px !important; font-size: 0.9rem; }
-    .linha-detalhe { display: none; background-color: #fcfdfe; }
-    .linha-detalhe td { padding: 0 !important; }
-    .slider-conteudo { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-in-out; }
-    .tabela-filha { margin: 0; background: #f8f9fa; width: 100% !important; border-collapse: collapse; table-layout: fixed !important; box-sizing: border-box !important; }
-    .tabela-filha td { font-size: 0.8rem; padding: 6px 12px !important; border-bottom: 1px dotted #dee2e6 !important; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; box-sizing: border-box; }
-    .tabela-filha tr td:first-child { width: 260px !important; min-width: 260px !important; max-width: 260px !important; text-align: left !important; padding-left: 20px !important; }
-    .tabela-filha td.text-end { text-align: right !important; }
-    .nav-pills .nav-link.active { background-color: #0d6efd; }
-    #tab-cartao.active { background-color: #198754; }
-    #tab-resumo.active { background-color: #6f42c1; }
-    .nav-pills .nav-link { color: #495057; font-weight: 500; }
-    .progresso-wrap { display: flex; align-items: center; gap: 6px; min-width: 160px; }
-    .progresso-trilho { flex: 1; height: 6px; background: #e9ecef; border-radius: 999px; overflow: hidden; }
-    .progresso-barra { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
-    .progresso-label { font-size: 0.72rem; font-weight: 600; white-space: nowrap; min-width: 38px; text-align: right; }
-    tr.linha-mes-atual > td { background-color: #fffbeb !important; }
-    tr.linha-mes-atual > td:first-child { background-color: #fffbeb !important; }
-    tr.linha-mes-atual > td:first-child::before { content: '▶ '; font-size: 0.6rem; color: #f59e0b; vertical-align: middle; }
-    .chart-container { position: relative; height: 240px; width: 100%; }
-    .card-metrica { border-left: 4px solid #6f42c1; background: #fdfcff; padding: 12px; border-radius: 6px; }
+    table th:first-child { background: #1e293b !important; }
+    tfoot tr td:first-child { background: #f1f5f9 !important; }
+    tbody tr.linha-mae { cursor: pointer; }
+    tbody tr.linha-mae:hover td { background: #f8fafc !important; }
+    th, td { white-space: nowrap; padding: 8px 12px !important; font-size: 0.85rem; }
+    .linha-detalhe { display: none; }
+    .linha-detalhe td { padding: 0 !important; border: none !important; }
+    .slider-conteudo { overflow: hidden; max-height: 0; transition: max-height 0.28s ease; }
+    .tabela-filha { width: 100% !important; table-layout: fixed !important; border-collapse: collapse; background: #f8fafc; }
+    .tabela-filha td { font-size: 0.78rem; padding: 6px 12px !important; border-bottom: 1px dotted #e2e8f0 !important; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tabela-filha tr td:first-child { width: 200px !important; min-width: 200px !important; max-width: 200px !important; padding-left: 20px !important; }
+    tr.linha-mes-atual > td { background: #fffbeb !important; }
+    tr.linha-mes-atual > td:first-child::before { content: '▶ '; font-size: 0.55rem; color: var(--cor-warning); vertical-align: middle; }
 
-    /* ── Overlay ── */
+    /* ── CARDS MOBILE (substitui tabela) ── */
+    .cards-mobile { display: none; }
+    .card-mes {
+      background: white; border-radius: 12px; margin-bottom: 10px;
+      border: 1px solid #e2e8f0; overflow: hidden;
+    }
+    .card-mes-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; cursor: pointer; user-select: none;
+      border-bottom: 1px solid transparent; transition: background 0.12s;
+    }
+    .card-mes-header:active { background: #f8fafc; }
+    .card-mes.mes-atual .card-mes-header { background: #fffbeb; border-bottom-color: #fde68a; }
+    .card-mes-titulo { font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+    .card-mes-total { font-weight: 700; font-size: 0.9rem; }
+    .card-mes-seta { color: #94a3b8; font-size: 0.75rem; transition: transform 0.2s; }
+    .card-mes.aberto .card-mes-seta { transform: rotate(180deg); }
+    .card-mes-corpo { display: none; padding: 0; }
+    .card-mes.aberto .card-mes-corpo { display: block; }
+    .card-cat-linha {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.82rem;
+    }
+    .card-cat-linha:last-child { border-bottom: none; }
+    .card-cat-nome { color: #475569; font-weight: 500; }
+    .card-cat-valor { font-weight: 600; }
+    .card-registros { background: #f8fafc; }
+    .card-reg {
+      display: flex; flex-direction: column; padding: 8px 14px;
+      border-top: 1px dashed #e2e8f0; font-size: 0.78rem; gap: 2px;
+    }
+    .card-reg-desc { color: #334155; font-weight: 500; }
+    .card-reg-meta { color: #94a3b8; font-size: 0.72rem; }
+    .card-reg-valor { font-weight: 700; align-self: flex-end; }
+    @media (max-width: 640px) {
+      .tabela-desktop { display: none !important; }
+      .cards-mobile   { display: block; }
+    }
+
+    /* ── MÉTRICAS RESUMO ── */
+    .card-metrica { border-radius: 10px; padding: 14px; border-left: 4px solid #e2e8f0; background: white; }
+    .card-metrica small { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; display: block; margin-bottom: 4px; }
+    .card-metrica h5 { margin: 0; font-weight: 800; font-size: 1.1rem; }
+    .progresso-wrap { display: flex; align-items: center; gap: 6px; min-width: 140px; }
+    .progresso-trilho { flex: 1; height: 5px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+    .progresso-barra { height: 100%; border-radius: 999px; transition: width 0.4s; }
+    .progresso-label { font-size: 0.7rem; font-weight: 700; min-width: 36px; text-align: right; }
+    tr.linha-mes-atual > td:first-child { background: #fffbeb !important; }
+
+    /* ── OVERLAY ── */
     #overlay {
-      position: fixed; inset: 0; background: rgba(255,255,255,0.88);
+      position: fixed; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(4px);
       display: none; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 9999; gap: 12px;
+      z-index: 9999; gap: 16px;
     }
-    #overlay p { font-size: 0.9rem; color: #64748b; font-weight: 500; margin: 0; }
-
-    @media (max-width: 768px) {
-      #container-lancamentos table { table-layout: auto !important; }
-      #container-lancamentos td, #container-lancamentos th { white-space: normal !important; padding: 10px 5px !important; font-size: 0.8rem !important; }
-      .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    }
+    .overlay-box { background: white; border-radius: 16px; padding: 32px 40px; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
+    .overlay-box p { margin: 12px 0 0; font-size: 0.88rem; color: #64748b; font-weight: 500; }
+    .overlay-steps { display: flex; gap: 6px; margin-top: 14px; justify-content: center; }
+    .overlay-step { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; transition: background 0.3s; }
+    .overlay-step.ativo { background: var(--cor-azul); }
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ══ LOGIN ════════════════════════════════════════════ -->
 <div id="tela-login">
   <div class="login-card">
     <div class="login-icon">📊</div>
     <div class="login-titulo">Painel Financeiro</div>
-    <div class="login-sub">Acesso restrito. Faça login com sua conta Google autorizada.</div>
+    <div class="login-sub">Acesso restrito.<br>Faça login com sua conta Google autorizada.</div>
     <div id="g_id_signin"></div>
     <div id="erro-login"></div>
   </div>
 </div>
 
-<!-- OVERLAY -->
+<!-- ══ OVERLAY ══════════════════════════════════════════ -->
 <div id="overlay">
-  <div class="spinner-border text-primary"></div>
-  <p id="overlay-msg">Carregando...</p>
+  <div class="overlay-box">
+    <div class="spinner-border text-primary"></div>
+    <p id="overlay-msg">Conectando...</p>
+    <div class="overlay-steps">
+      <div class="overlay-step ativo" id="step-0"></div>
+      <div class="overlay-step" id="step-1"></div>
+      <div class="overlay-step" id="step-2"></div>
+      <div class="overlay-step" id="step-3"></div>
+    </div>
+  </div>
 </div>
 
-<!-- APP -->
+<!-- ══ APP ══════════════════════════════════════════════ -->
 <div id="app">
 
-  <div class="app-header">
-    <span class="titulo">📊 Painel Financeiro</span>
-    <div class="usuario-info">
-      <img id="usr-foto" src="" style="display:none;">
-      <span id="usr-nome"></span>
-      <button class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem;padding:3px 10px;" onclick="sair()">Sair</button>
+  <!-- Header -->
+  <div class="app-header aba-lancamentos" id="app-header">
+    <div class="header-titulo">
+      <span class="dot"></span>
+      <span>Painel Financeiro</span>
+    </div>
+    <div class="usr-info">
+      <img id="usr-foto" src="" style="display:none;" alt="">
+      <span class="usr-nome" id="usr-nome"></span>
+      <button class="btn btn-sm btn-sair" onclick="sair()">Sair</button>
     </div>
   </div>
 
-  <div class="filtros-topo">
-    <div class="d-flex align-items-start gap-3 flex-wrap">
-      <div id="grupo-historico" class="filtro-grupo">
-        <div class="filtro-bloco">
-          <span class="filtro-label">📅 Meses</span>
-          <div class="chips-wrap" id="chips-mes"></div>
+  <!-- Filtros -->
+  <div class="filtros-topo" id="filtros-topo">
+    <button class="filtros-toggle" id="filtros-toggle" onclick="toggleFiltros()">
+      <span>🔽 Filtros</span><span class="seta">▾</span>
+    </button>
+    <div class="filtros-corpo" id="filtros-corpo">
+      <div class="d-flex align-items-start gap-3 flex-wrap">
+        <div id="grupo-historico" class="filtro-grupo">
+          <div class="filtro-bloco">
+            <span class="filtro-label">📅 Meses</span>
+            <div class="chips-wrap" id="chips-mes"></div>
+          </div>
+          <div class="filtro-bloco">
+            <span class="filtro-label">🏷 Categorias</span>
+            <div class="chips-wrap" id="chips-categoria"></div>
+          </div>
         </div>
-        <div class="filtro-bloco">
-          <span class="filtro-label">🏷 Categorias</span>
-          <div class="chips-wrap" id="chips-categoria"></div>
+        <div id="grupo-resumo" class="filtro-grupo d-none">
+          <div class="filtro-bloco">
+            <span class="filtro-label">🗂 Tipo</span>
+            <div class="chips-wrap" id="chips-resumo-tipo"></div>
+          </div>
+          <div class="filtro-bloco">
+            <span class="filtro-label">📂 Categoria</span>
+            <div class="chips-wrap" id="chips-resumo-cat"></div>
+          </div>
         </div>
+        <div style="display:none">
+          <select id="filtro-mes" multiple></select>
+          <select id="filtro-categoria" multiple></select>
+          <select id="filtro-resumo-tipo" multiple></select>
+          <select id="filtro-resumo-cat" multiple></select>
+        </div>
+        <button class="btn btn-sm btn-limpar ms-auto" onclick="redefinirFiltros()">✕ Limpar</button>
       </div>
-      <div id="grupo-resumo" class="filtro-grupo d-none">
-        <div class="filtro-bloco">
-          <span class="filtro-label">🗂 Tipo</span>
-          <div class="chips-wrap" id="chips-resumo-tipo"></div>
-        </div>
-        <div class="filtro-bloco">
-          <span class="filtro-label">📂 Categoria</span>
-          <div class="chips-wrap" id="chips-resumo-cat"></div>
-        </div>
-      </div>
-      <div style="display:none">
-        <select id="filtro-mes" multiple></select>
-        <select id="filtro-categoria" multiple></select>
-        <select id="filtro-resumo-tipo" multiple></select>
-        <select id="filtro-resumo-cat" multiple></select>
-      </div>
-      <button class="btn btn-outline-danger btn-limpar-filtros ms-auto" onclick="redefinirFiltros()">✕ Limpar</button>
     </div>
   </div>
 
+  <!-- Abas desktop -->
   <div class="abas-fixas">
     <ul class="nav nav-pills d-inline-flex border p-1 rounded bg-light">
       <li class="nav-item"><button class="nav-link nav-link-sm active" id="tab-lancamentos" data-bs-toggle="pill" data-bs-target="#painel-lancamentos" onclick="alternarAba('lancamentos')">Gerais</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-cartao" data-bs-toggle="pill" data-bs-target="#painel-cartao" onclick="alternarAba('cartao')">Cartão</button></li>
-      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" onclick="alternarAba('resumo')">🎯 Planejado/Resumo</button></li>
+      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" onclick="alternarAba('resumo')">🎯 Planejado</button></li>
     </ul>
   </div>
 
+  <!-- Conteúdo -->
   <div class="conteudo-principal">
+
+    <!-- Gráfico -->
     <div class="container-card mb-3 py-2">
-      <div id="titulo-grafico" class="text-muted fw-bold mb-2" style="font-size:0.85rem;">EVOLUÇÃO DOS SUBTOTAIS</div>
+      <div id="titulo-grafico" class="fw-bold mb-2" style="font-size:0.78rem;color:#94a3b8;letter-spacing:0.05em;">EVOLUÇÃO DOS SUBTOTAIS</div>
       <div class="row">
         <div class="col-12" id="col-grafico-principal"><div class="chart-container"><canvas id="graficoSubtotais"></canvas></div></div>
         <div class="col-md-6 d-none" id="col-grafico-pizza"><div class="chart-container"><canvas id="graficoPizzaResumo"></canvas></div></div>
@@ -196,53 +329,80 @@
 
     <div class="tab-content">
 
+      <!-- ABA GERAIS -->
       <div class="tab-pane fade show active" id="painel-lancamentos">
-        <div class="container-card">
-          <div id="loading-lancamentos" class="loading text-secondary"><div class="spinner-border spinner-border-sm text-primary"></div> Carregando...</div>
+        <div class="container-card tabela-desktop">
+          <div id="sk-lancamentos">
+            <div class="skeleton sk-titulo"></div>
+            <div class="skeleton sk-linha" style="width:100%"></div>
+            <div class="skeleton sk-linha" style="width:90%"></div>
+            <div class="skeleton sk-linha" style="width:95%"></div>
+            <div class="skeleton sk-linha" style="width:85%"></div>
+          </div>
           <div id="container-lancamentos" class="table-responsive d-none">
             <table class="table table-sm table-bordered align-middle m-0" style="width:100%;">
               <thead id="header-lancamentos"></thead><tbody id="body-lancamentos"></tbody><tfoot id="footer-lancamentos"></tfoot>
             </table>
           </div>
         </div>
+        <div class="cards-mobile" id="cards-lancamentos"></div>
       </div>
 
+      <!-- ABA CARTÃO -->
       <div class="tab-pane fade" id="painel-cartao">
-        <div class="container-card">
-          <div id="loading-cartao" class="loading text-secondary"><div class="spinner-border spinner-border-sm text-success"></div> Carregando...</div>
+        <div class="container-card tabela-desktop">
+          <div id="sk-cartao">
+            <div class="skeleton sk-titulo"></div>
+            <div class="skeleton sk-linha" style="width:100%"></div>
+            <div class="skeleton sk-linha" style="width:88%"></div>
+            <div class="skeleton sk-linha" style="width:93%"></div>
+          </div>
           <div id="container-cartao" class="table-responsive d-none">
             <table class="table table-sm table-bordered align-middle m-0" style="width:100%;">
               <thead id="header-cartao"></thead><tbody id="body-cartao"></tbody><tfoot id="footer-cartao"></tfoot>
             </table>
           </div>
         </div>
+        <div class="cards-mobile" id="cards-cartao"></div>
       </div>
 
+      <!-- ABA RESUMO -->
       <div class="tab-pane fade" id="painel-resumo">
         <div class="row g-2 mb-3">
-          <div class="col-md-3"><div class="card-metrica" style="border-left-color:#198754;"><small class="text-muted d-block fw-semibold">RENDA TOTAL PLANEJADA</small><h5 class="m-0 fw-bold text-success" id="m-total-renda">R$ 0,00</h5></div></div>
-          <div class="col-md-3"><div class="card-metrica" style="border-left-color:#0d6efd;"><small class="text-muted d-block fw-semibold">DESPESA TOTAL PLANEJADA</small><h5 class="m-0 fw-bold text-dark" id="m-total-despesa">R$ 0,00</h5></div></div>
-          <div class="col-md-3"><div class="card-metrica" style="border-left-color:#dc3545;"><small class="text-muted d-block fw-semibold">COMPROMETIMENTO DA RENDA</small><h5 class="m-0 fw-bold text-danger" id="m-comprometimento">0,00%</h5></div></div>
-          <div class="col-md-3"><div class="card-metrica" style="border-left-color:#6f42c1;background:#fbf9ff;"><small class="text-muted d-block fw-semibold">SALDO LIVRE (SOBRA)</small><h5 class="m-0 fw-bold" style="color:#6f42c1;" id="m-saldo-livre">R$ 0,00</h5></div></div>
+          <div class="col-6 col-md-3"><div class="card-metrica" style="border-left-color:var(--cor-verde);"><small>Renda Planejada</small><h5 class="text-success" id="m-total-renda">—</h5></div></div>
+          <div class="col-6 col-md-3"><div class="card-metrica" style="border-left-color:var(--cor-azul);"><small>Despesa Planejada</small><h5 id="m-total-despesa">—</h5></div></div>
+          <div class="col-6 col-md-3"><div class="card-metrica" style="border-left-color:var(--cor-danger);"><small>Comprometimento</small><h5 class="text-danger" id="m-comprometimento">—</h5></div></div>
+          <div class="col-6 col-md-3"><div class="card-metrica" style="border-left-color:var(--cor-roxo);background:#fbf9ff;"><small>Saldo Livre</small><h5 style="color:var(--cor-roxo);" id="m-saldo-livre">—</h5></div></div>
           <div class="col-12">
-            <div class="container-card py-3">
-              <h5 class="mb-3">Despesas Variáveis (DV)</h5>
-              <div class="row text-center">
-                <div class="col-md-4"><p class="small text-muted mb-0">Mês Atual</p><h4 id="m-dv-atual" class="text-danger">R$ 0,00</h4></div>
-                <div class="col-md-4"><p class="small text-muted mb-0">Mês Seguinte</p><h4 id="m-dv-seguinte" class="text-danger">R$ 0,00</h4></div>
-                <div class="col-md-4"><p class="small text-muted mb-0">Total Previsto</p><h4 id="m-dv-total" class="text-danger">R$ 0,00</h4></div>
+            <div class="container-card py-2">
+              <div class="fw-bold mb-2" style="font-size:0.78rem;color:#94a3b8;letter-spacing:0.05em;">DESPESAS VARIÁVEIS (DV)</div>
+              <div class="row text-center g-2">
+                <div class="col-4"><p class="small text-muted mb-1" style="font-size:0.75rem;">Mês Atual</p><h5 id="m-dv-atual" class="text-danger mb-0">—</h5></div>
+                <div class="col-4"><p class="small text-muted mb-1" style="font-size:0.75rem;">Mês Seguinte</p><h5 id="m-dv-seguinte" class="text-danger mb-0">—</h5></div>
+                <div class="col-4"><p class="small text-muted mb-1" style="font-size:0.75rem;">Total Previsto</p><h5 id="m-dv-total" class="text-danger mb-0">—</h5></div>
               </div>
             </div>
           </div>
         </div>
         <div class="container-card">
-          <div id="loading-resumo" class="loading text-secondary"><div class="spinner-border spinner-border-sm text-warning"></div> Mapeando Orçamento...</div>
+          <div id="sk-resumo">
+            <div class="skeleton sk-titulo"></div>
+            <div class="skeleton sk-linha" style="width:100%"></div>
+            <div class="skeleton sk-linha" style="width:92%"></div>
+            <div class="skeleton sk-linha" style="width:96%"></div>
+          </div>
           <div id="container-resumo" class="table-responsive d-none">
             <table class="table table-sm table-striped table-bordered align-middle m-0">
-              <thead class="table-dark"><tr>
-                <th>Fluxo</th><th>Tipo</th><th>Categoria</th><th>Descrição</th>
-                <th class="text-end">Valor Mensal</th><th class="text-end">% do Orçamento</th>
-                <th class="text-end">% da Renda Total</th><th class="text-end">Saldo da Linha</th><th class="text-center">Linha</th>
+              <thead style="background:#1e293b;color:white;"><tr>
+                <th style="background:#1e293b;color:white;">Fluxo</th>
+                <th style="background:#1e293b;color:white;">Tipo</th>
+                <th style="background:#1e293b;color:white;">Categoria</th>
+                <th style="background:#1e293b;color:white;">Descrição</th>
+                <th style="background:#1e293b;color:white;" class="text-end">Valor</th>
+                <th style="background:#1e293b;color:white;" class="text-end">% Orç.</th>
+                <th style="background:#1e293b;color:white;" class="text-end">% Renda</th>
+                <th style="background:#1e293b;color:white;" class="text-end">Saldo</th>
+                <th style="background:#1e293b;color:white;" class="text-center">Linha</th>
               </tr></thead>
               <tbody id="body-resumo"></tbody>
               <tfoot id="footer-resumo"></tfoot>
@@ -253,7 +413,23 @@
 
     </div>
   </div>
-</div>
+
+  <!-- Bottom Nav mobile -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bnav-btn ativo" id="bnav-lancamentos" onclick="alternarAba('lancamentos')">
+        <span class="icon">📋</span><span>Gerais</span>
+      </button>
+      <button class="bnav-btn" id="bnav-cartao" onclick="alternarAba('cartao')">
+        <span class="icon">💳</span><span>Cartão</span>
+      </button>
+      <button class="bnav-btn" id="bnav-resumo" onclick="alternarAba('resumo')">
+        <span class="icon">🎯</span><span>Planejado</span>
+      </button>
+    </div>
+  </nav>
+
+</div><!-- /app -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -264,35 +440,34 @@
 // ══════════════════════════════════════════════════════════
 const CLIENT_ID = "388994231044-5pc8p0stqbcprq2m3dpdoqlhqq5thim0.apps.googleusercontent.com";
 const GAS_URL   = "https://script.google.com/macros/s/AKfycbyTLot0eQgJUcFBL1Vz3x5A3eZsE9svQA13rNSgLDAhlRZ03_JrtCdkZfdfNVew7Jepkw/exec";
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas em ms
 
 // ══════════════════════════════════════════════════════════
-// ESTADO GLOBAL
+// ESTADO
 // ══════════════════════════════════════════════════════════
 let TOKEN = null;
 let DADOS_LANCAMENTOS = null, DADOS_CARTAO = null, DADOS_RESUMO = null;
 let GRAFICO = null, PIZZA = null;
 let ABA = 'lancamentos';
+let ABA_RENDERIZADA = {};
 
 // ══════════════════════════════════════════════════════════
 // AUTENTICAÇÃO
 // ══════════════════════════════════════════════════════════
 window.onload = function() {
   const t = localStorage.getItem('pf_token');
-  const n = localStorage.getItem('pf_nome');
-  const f = localStorage.getItem('pf_foto');
-  if (t) { TOKEN = t; mostrarApp(n, f); return; }
-
+  if (t) { TOKEN = t; mostrarApp(localStorage.getItem('pf_nome'), localStorage.getItem('pf_foto')); return; }
   google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
   google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
 };
 
-function onLogin(response) {
-  const payload = JSON.parse(atob(response.credential.split('.')[1]));
-  TOKEN = response.credential;
+function onLogin(r) {
+  const p = JSON.parse(atob(r.credential.split('.')[1]));
+  TOKEN = r.credential;
   localStorage.setItem('pf_token', TOKEN);
-  localStorage.setItem('pf_nome',  payload.name    || payload.email);
-  localStorage.setItem('pf_foto',  payload.picture || '');
-  mostrarApp(payload.name || payload.email, payload.picture || '');
+  localStorage.setItem('pf_nome',  p.name    || p.email);
+  localStorage.setItem('pf_foto',  p.picture || '');
+  mostrarApp(p.name || p.email, p.picture || '');
 }
 
 function mostrarApp(nome, foto) {
@@ -312,154 +487,197 @@ function sair() {
 }
 
 // ══════════════════════════════════════════════════════════
-// COMUNICAÇÃO COM GAS — fetch simples, sem JSONP
+// CACHE localStorage
+// ══════════════════════════════════════════════════════════
+function cacheSet(key, data) {
+  try { localStorage.setItem('pf_cache_' + key, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+}
+function cacheGet(key) {
+  try {
+    var raw = localStorage.getItem('pf_cache_' + key);
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > CACHE_TTL) { localStorage.removeItem('pf_cache_' + key); return null; }
+    return obj.data;
+  } catch(e) { return null; }
+}
+
+// ══════════════════════════════════════════════════════════
+// COMUNICAÇÃO GAS
 // ══════════════════════════════════════════════════════════
 async function chamarGAS(acao) {
   const url  = GAS_URL + '?acao=' + acao + '&token=' + encodeURIComponent(TOKEN);
   const resp = await fetch(url);
   const text = await resp.text();
-  // O GAS redireciona para googleusercontent.com — o fetch segue automaticamente
-  // e devolve o JSON final. Parseia direto.
   const dados = JSON.parse(text);
   if (dados.erro) {
-    // Token expirado: limpa sessão e força novo login
-    if (dados.erro.includes('Token')) { localStorage.clear(); location.reload(); }
+    if (dados.erro.includes('Token')) { localStorage.removeItem('pf_token'); location.reload(); }
     throw new Error(dados.erro);
   }
   return dados;
 }
 
+// ══════════════════════════════════════════════════════════
+// CARREGAMENTO PARALELO + CACHE
+// ══════════════════════════════════════════════════════════
 async function carregarDados() {
-  overlay('Carregando lançamentos...');
+  // Tenta servir do cache primeiro
+  var cL = cacheGet('lancamentos'), cC = cacheGet('cartao'), cR = cacheGet('resumo'), cD = cacheGet('dv');
+  if (cL && cC && cR && cD) {
+    DADOS_LANCAMENTOS = cL; DADOS_CARTAO = cC; DADOS_RESUMO = cR;
+    preencherDV(cD);
+    iniciarUI();
+    return;
+  }
+
+  // Sem cache: carrega em paralelo com indicador de progresso
+  overlayShow('Carregando dados...');
   try {
-    DADOS_LANCAMENTOS = await chamarGAS('getDadosLancamentos');
-    overlay('Carregando cartão...');
-    DADOS_CARTAO      = await chamarGAS('getDadosCartaoC');
-    overlay('Carregando resumo...');
-    DADOS_RESUMO      = await chamarGAS('getDadosResumo');
-    overlay('Carregando DV...');
-    const dv          = await chamarGAS('getDadosDV');
-    document.getElementById('m-dv-atual').innerText    = moeda(dv.mesAtual);
-    document.getElementById('m-dv-seguinte').innerText = moeda(dv.mesSeguinte);
-    document.getElementById('m-dv-total').innerText    = moeda(dv.totalPrevisto);
-    overlay(null);
-    alimentarFiltroMeses();
-    alimentarFiltrosResumo();
-    alternarAba('lancamentos');
+    const [lanc, cartao, resumo, dv] = await Promise.all([
+      chamarGAS('getDadosLancamentos').then(function(d){ stepAtivo(1); return d; }),
+      chamarGAS('getDadosCartaoC')    .then(function(d){ stepAtivo(2); return d; }),
+      chamarGAS('getDadosResumo')     .then(function(d){ stepAtivo(3); return d; }),
+      chamarGAS('getDadosDV')
+    ]);
+    DADOS_LANCAMENTOS = lanc; DADOS_CARTAO = cartao; DADOS_RESUMO = resumo;
+    cacheSet('lancamentos', lanc); cacheSet('cartao', cartao);
+    cacheSet('resumo', resumo);    cacheSet('dv', dv);
+    preencherDV(dv);
+    overlayHide();
+    iniciarUI();
   } catch(err) {
-    overlay(null);
+    overlayHide();
     document.getElementById('erro-login').textContent = 'Erro: ' + err.message;
     document.getElementById('tela-login').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
   }
 }
 
+function preencherDV(dv) {
+  document.getElementById('m-dv-atual').innerText    = moeda(dv.mesAtual);
+  document.getElementById('m-dv-seguinte').innerText = moeda(dv.mesSeguinte);
+  document.getElementById('m-dv-total').innerText    = moeda(dv.totalPrevisto);
+}
+
+function iniciarUI() {
+  alimentarFiltroMeses();
+  alimentarFiltrosResumo();
+  alternarAba('lancamentos');
+}
+
 // ══════════════════════════════════════════════════════════
 // OVERLAY
 // ══════════════════════════════════════════════════════════
-function overlay(msg) {
-  var el = document.getElementById('overlay');
-  if (msg) { el.style.display = 'flex'; document.getElementById('overlay-msg').textContent = msg; }
-  else      { el.style.display = 'none'; }
+function overlayShow(msg) {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('overlay-msg').textContent = msg;
+}
+function overlayHide() { document.getElementById('overlay').style.display = 'none'; }
+function stepAtivo(n) {
+  var el = document.getElementById('step-' + n);
+  if (el) el.classList.add('ativo');
+}
+
+// ══════════════════════════════════════════════════════════
+// FILTROS MOBILE TOGGLE
+// ══════════════════════════════════════════════════════════
+function toggleFiltros() {
+  var btn   = document.getElementById('filtros-toggle');
+  var corpo = document.getElementById('filtros-corpo');
+  var aberto = corpo.classList.toggle('aberto');
+  btn.classList.toggle('aberto', aberto);
+  setTimeout(ajustarAlturas, 50);
 }
 
 // ══════════════════════════════════════════════════════════
 // ALTURAS STICKY
 // ══════════════════════════════════════════════════════════
 function ajustarAlturas() {
-  var hH = (document.querySelector('.app-header')  || {}).getBoundingClientRect ? document.querySelector('.app-header').getBoundingClientRect().height  : 45;
-  var hF = (document.querySelector('.filtros-topo') || {}).getBoundingClientRect ? document.querySelector('.filtros-topo').getBoundingClientRect().height : 50;
-  document.documentElement.style.setProperty('--h-header',       hH + 'px');
+  var hH = document.querySelector('.app-header')  ? document.querySelector('.app-header').getBoundingClientRect().height  : 46;
+  var hF = document.querySelector('.filtros-topo') ? document.querySelector('.filtros-topo').getBoundingClientRect().height : 60;
+  document.documentElement.style.setProperty('--h-header',        hH + 'px');
   document.documentElement.style.setProperty('--h-filtros-total', (hH + hF) + 'px');
 }
 
 // ══════════════════════════════════════════════════════════
 // CHIPS
 // ══════════════════════════════════════════════════════════
-function renderChips(id, valores, cls, cb) {
-  var wrap = document.getElementById(id);
-  wrap.innerHTML = '';
-  valores.forEach(function(v) {
+function renderChips(id, vals, cls, cb) {
+  var wrap = document.getElementById(id); wrap.innerHTML = '';
+  vals.forEach(function(v) {
     var c = document.createElement('span');
     c.className = 'chip'; c.textContent = v; c.dataset.valor = v;
     c.addEventListener('click', function() { c.classList.toggle(cls); syncSelect(id, cls); cb(); });
     wrap.appendChild(c);
   });
 }
-function syncSelect(chipsId, cls) {
-  var mapa = { 'chips-mes':'filtro-mes','chips-categoria':'filtro-categoria','chips-resumo-tipo':'filtro-resumo-tipo','chips-resumo-cat':'filtro-resumo-cat' };
-  var sel  = document.getElementById(mapa[chipsId]);
-  if (!sel) return;
-  var ativos = chipsAtivos(chipsId, cls);
-  Array.from(sel.options).forEach(function(o) { o.selected = ativos.includes(o.value); });
+function syncSelect(id, cls) {
+  var mapa = {'chips-mes':'filtro-mes','chips-categoria':'filtro-categoria','chips-resumo-tipo':'filtro-resumo-tipo','chips-resumo-cat':'filtro-resumo-cat'};
+  var sel = document.getElementById(mapa[id]); if (!sel) return;
+  var at = chipsAtivos(id, cls);
+  Array.from(sel.options).forEach(function(o){ o.selected = at.includes(o.value); });
 }
-function chipsAtivos(id, cls) { return Array.from(document.querySelectorAll('#' + id + ' .' + cls)).map(function(c){return c.dataset.valor;}); }
-function ativarChip(id, v, cls) { var c = document.querySelector('#' + id + ' [data-valor="' + v + '"]'); if(c) c.classList.add(cls); }
-function limparChips(id, cls)   { document.querySelectorAll('#' + id + ' .chip').forEach(function(c){c.classList.remove(cls);}); }
-function selectVals(id)         { return Array.from(document.getElementById(id).selectedOptions).map(function(o){return o.value;}); }
+function chipsAtivos(id, cls) { return Array.from(document.querySelectorAll('#'+id+' .'+cls)).map(function(c){return c.dataset.valor;}); }
+function ativarChip(id, v, cls) { var c = document.querySelector('#'+id+' [data-valor="'+v+'"]'); if(c) c.classList.add(cls); }
+function limparChips(id, cls) { document.querySelectorAll('#'+id+' .chip').forEach(function(c){c.classList.remove(cls);}); }
+function selectVals(id) { return Array.from(document.getElementById(id).selectedOptions).map(function(o){return o.value;}); }
 
 // ══════════════════════════════════════════════════════════
 // FILTROS
 // ══════════════════════════════════════════════════════════
 function alimentarFiltroMeses() {
   var set = {};
-  [DADOS_LANCAMENTOS, DADOS_CARTAO].forEach(function(d) { if(d&&d.meses) d.meses.forEach(function(m){set[m.mesAno]=true;}); });
+  [DADOS_LANCAMENTOS, DADOS_CARTAO].forEach(function(d){ if(d&&d.meses) d.meses.forEach(function(m){set[m.mesAno]=true;}); });
   var meses = Object.keys(set).sort(function(a,b){
     var pa=a.split('/'),pb=b.split('/');
-    return new Date(pa[1],pa[0]-1) - new Date(pb[1],pb[0]-1);
+    return new Date(pa[1],pa[0]-1)-new Date(pb[1],pb[0]-1);
   });
-  var sel = document.getElementById('filtro-mes');
-  sel.innerHTML = '';
+  var sel = document.getElementById('filtro-mes'); sel.innerHTML='';
   meses.forEach(function(m){ sel.options.add(new Option(m,m)); });
   renderChips('chips-mes', meses, 'ativo-azul', aplicarFiltros);
 }
 
 function alimentarFiltrosResumo(soCats) {
   if (!DADOS_RESUMO) return;
-  var tiposAtivos = chipsAtivos('chips-resumo-tipo','ativo-roxo');
-  var catsAtivas  = chipsAtivos('chips-resumo-cat', 'ativo-roxo');
-  var todos = DADOS_RESUMO.rendas.concat(DADOS_RESUMO.despesas);
-
+  var tiposAt = chipsAtivos('chips-resumo-tipo','ativo-roxo');
+  var catsAt  = chipsAtivos('chips-resumo-cat', 'ativo-roxo');
+  var todos   = DADOS_RESUMO.rendas.concat(DADOS_RESUMO.despesas);
   if (!soCats) {
-    var tiposSet = {};
-    todos.forEach(function(i){ tiposSet[i.tipo]=true; });
-    var tipos = Object.keys(tiposSet).sort();
-    var selT = document.getElementById('filtro-resumo-tipo');
-    selT.innerHTML = '';
-    tipos.forEach(function(t){ selT.options.add(new Option(t,t)); });
+    var tSet = {}; todos.forEach(function(i){tSet[i.tipo]=true;});
+    var tipos = Object.keys(tSet).sort();
+    var selT = document.getElementById('filtro-resumo-tipo'); selT.innerHTML='';
+    tipos.forEach(function(t){selT.options.add(new Option(t,t));});
     renderChips('chips-resumo-tipo', tipos, 'ativo-roxo', function(){ alimentarFiltrosResumo(true); calcularResumo(); });
-    tiposAtivos.forEach(function(t){ ativarChip('chips-resumo-tipo',t,'ativo-roxo'); });
+    tiposAt.forEach(function(t){ativarChip('chips-resumo-tipo',t,'ativo-roxo');});
   }
-
-  var tiposFiltrados = chipsAtivos('chips-resumo-tipo','ativo-roxo');
-  var catsSet = {};
-  todos.forEach(function(i){ if(!tiposFiltrados.length || tiposFiltrados.includes(i.tipo)) catsSet[i.categoria]=true; });
-  var cats = Object.keys(catsSet).sort();
-  var selC = document.getElementById('filtro-resumo-cat');
-  selC.innerHTML = '';
-  cats.forEach(function(c){ selC.options.add(new Option(c,c)); });
+  var tiposFilt = chipsAtivos('chips-resumo-tipo','ativo-roxo');
+  var cSet = {}; todos.forEach(function(i){ if(!tiposFilt.length||tiposFilt.includes(i.tipo)) cSet[i.categoria]=true; });
+  var cats = Object.keys(cSet).sort();
+  var selC = document.getElementById('filtro-resumo-cat'); selC.innerHTML='';
+  cats.forEach(function(c){selC.options.add(new Option(c,c));});
   renderChips('chips-resumo-cat', cats, 'ativo-roxo', calcularResumo);
-  catsAtivas.forEach(function(c){ ativarChip('chips-resumo-cat',c,'ativo-roxo'); });
+  catsAt.forEach(function(c){ativarChip('chips-resumo-cat',c,'ativo-roxo');});
 }
 
 function redefinirFiltros() {
-  if (ABA === 'resumo') {
+  if (ABA==='resumo') {
     limparChips('chips-resumo-tipo','ativo-roxo'); limparChips('chips-resumo-cat','ativo-roxo');
-    document.getElementById('filtro-resumo-tipo').selectedIndex = -1;
-    document.getElementById('filtro-resumo-cat').selectedIndex  = -1;
+    document.getElementById('filtro-resumo-tipo').selectedIndex=-1;
+    document.getElementById('filtro-resumo-cat').selectedIndex=-1;
     alimentarFiltrosResumo(false); calcularResumo();
   } else {
     limparChips('chips-mes','ativo-azul'); limparChips('chips-categoria','ativo-azul');
-    document.getElementById('filtro-mes').selectedIndex       = -1;
-    document.getElementById('filtro-categoria').selectedIndex = -1;
+    document.getElementById('filtro-mes').selectedIndex=-1;
+    document.getElementById('filtro-categoria').selectedIndex=-1;
+    ABA_RENDERIZADA = {};
     aplicarFiltros();
   }
 }
 
 function aplicarFiltros() {
   var meses = selectVals('filtro-mes'), cats = selectVals('filtro-categoria');
-  renderTabela('lancamentos', DADOS_LANCAMENTOS, meses, cats, 'text-primary');
-  renderTabela('cartao',      DADOS_CARTAO,      meses, cats, 'text-success');
+  if (ABA === 'lancamentos' || !ABA_RENDERIZADA.lancamentos) renderTabela('lancamentos', DADOS_LANCAMENTOS, meses, cats, 'text-primary');
+  if (ABA === 'cartao'      || !ABA_RENDERIZADA.cartao)      renderTabela('cartao',      DADOS_CARTAO,      meses, cats, 'text-success');
   atualizarGrafico();
 }
 
@@ -468,12 +686,28 @@ function aplicarFiltros() {
 // ══════════════════════════════════════════════════════════
 function alternarAba(aba) {
   ABA = aba;
+  // Header cor
+  var hdr = document.getElementById('app-header');
+  hdr.className = 'app-header aba-' + aba;
+  // Bottom nav
+  document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('ativo','verde','roxo'); });
+  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo'};
+  var bnavClsMap = {cartao:'verde',resumo:'roxo'};
+  var btn = document.getElementById(bnavMap[aba]);
+  if (btn) { btn.classList.add('ativo'); if(bnavClsMap[aba]) btn.classList.add(bnavClsMap[aba]); }
+  // Tab pills desktop
+  document.querySelectorAll('[id^="tab-"]').forEach(function(t){t.classList.remove('active');});
+  var tp = document.getElementById('tab-'+aba); if(tp) tp.classList.add('active');
+  // Tab panes
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('show','active');});
+  var pane = document.getElementById('painel-'+aba); if(pane) { pane.classList.add('show','active'); }
+
   if (aba === 'resumo') {
     document.getElementById('grupo-historico').classList.add('d-none');
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
     document.getElementById('col-grafico-pizza').classList.remove('d-none');
-    document.getElementById('titulo-grafico').innerText = 'VISTA PLANEJAMENTO: DESPESAS VS RENDAS';
+    document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
   } else {
@@ -481,187 +715,231 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    document.getElementById('titulo-grafico').innerText = 'EVOLUÇÃO DOS SUBTOTAIS (VISTA ATUAL)';
+    document.getElementById('titulo-grafico').textContent = 'EVOLUÇÃO DOS SUBTOTAIS';
     setTimeout(ajustarAlturas, 50);
-    var dados = aba === 'lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
-    var sel = document.getElementById('filtro-categoria');
-    sel.innerHTML = '';
+    // Lazy: só renderiza se ainda não renderizou ou se filtros mudaram
+    var dados = aba==='lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
+    var sel = document.getElementById('filtro-categoria'); sel.innerHTML='';
     if (dados && dados.categorias) {
       dados.categorias.forEach(function(c){ sel.options.add(new Option(c,c)); });
       renderChips('chips-categoria', dados.categorias, 'ativo-azul', aplicarFiltros);
     }
-    aplicarFiltros();
+    if (!ABA_RENDERIZADA[aba]) aplicarFiltros();
+    else atualizarGrafico();
   }
 }
 
 // ══════════════════════════════════════════════════════════
-// TABELAS
+// TABELA DESKTOP
 // ══════════════════════════════════════════════════════════
-function renderTabela(id, dados, mesesFiltro, catsFiltro, corCls) {
+function renderTabela(id, dados, mesesFilt, catsFilt, corCls) {
   if (!dados) return;
-  var container = document.getElementById('container-' + id);
-  var thead     = document.getElementById('header-'    + id);
-  var tbody     = document.getElementById('body-'      + id);
-  var tfoot     = document.getElementById('footer-'    + id);
-  document.getElementById('loading-' + id).classList.add('d-none');
+  // Esconde skeleton
+  var sk = document.getElementById('sk-'+id); if(sk) sk.style.display='none';
+  var container = document.getElementById('container-'+id);
+  var thead = document.getElementById('header-'+id);
+  var tbody = document.getElementById('body-'+id);
+  var tfoot = document.getElementById('footer-'+id);
 
-  var cols = dados.categorias.filter(function(c){ return !catsFiltro.length || catsFiltro.includes(c); });
+  var cols = dados.categorias.filter(function(c){ return !catsFilt.length||catsFilt.includes(c); });
+  var cg = '<col style="width:200px">' + cols.map(function(){return '<col style="width:110px">';}).join('') + '<col style="width:110px"><col style="width:130px">';
+  var tbl = thead.closest('table');
+  var old = tbl.querySelector('colgroup'); if(old) old.remove();
+  tbl.insertAdjacentHTML('afterbegin','<colgroup>'+cg+'</colgroup>');
+  tbl.style.tableLayout='fixed';
 
-  var cg = '<col style="width:260px">' + cols.map(function(){ return '<col style="width:120px">'; }).join('') + '<col style="width:120px"><col style="width:150px">';
-  var tabelaMae = thead.closest('table');
-  var cgAntigo  = tabelaMae.querySelector('colgroup');
-  if (cgAntigo) cgAntigo.remove();
-  tabelaMae.insertAdjacentHTML('afterbegin', '<colgroup>' + cg + '</colgroup>');
-  tabelaMae.style.tableLayout = 'fixed';
+  thead.innerHTML='<tr><th class="coluna-fixa">Mês/Ano</th>'+cols.map(function(c){return '<th class="text-end">'+c+'</th>';}).join('')+'<th class="text-end">Saldo</th><th class="text-end">Acumulado</th></tr>';
 
-  thead.innerHTML = '<tr><th class="coluna-fixa-largura">Mês/Ano</th>' + cols.map(function(c){ return '<th class="text-end">' + c + '</th>'; }).join('') + '<th class="text-end">Saldo da Linha</th><th class="text-end">Acumulado Histórico</th></tr>';
+  var totais={}, acum=0, html='';
+  cols.forEach(function(c){totais[c]=0;});
+  var agora=new Date();
+  var mesAtualChave=pad2(agora.getMonth()+1)+'/'+agora.getFullYear();
 
-  var totais = {}, acum = 0, html = '';
-  cols.forEach(function(c){ totais[c] = 0; });
-
-  var agora = new Date();
-  var mesAtualChave = pad2(agora.getMonth()+1) + '/' + agora.getFullYear();
-
-  dados.meses.forEach(function(m, idx) {
-    if (mesesFiltro.length && !mesesFiltro.includes(m.mesAno)) return;
-    var gid = 'gaveta-' + id + '-' + idx;
-    var ehAtual = m.mesAno === mesAtualChave;
-    var totLinha = 0;
-    cols.forEach(function(c){ totLinha += (m.valoresPorCategoria[c] || 0); });
-    acum += totLinha;
-
-    html += '<tr class="linha-mae' + (ehAtual ? ' linha-mes-atual' : '') + '" onclick="slider(\'' + gid + '\')">';
-    html += '<td class="coluna-fixa-largura"><strong class="' + corCls + '">' + m.mesAno + '</strong>';
-    if (ehAtual) html += ' <span class="badge bg-warning text-dark" style="font-size:0.65rem;">hoje</span>';
-    html += ' <span>⬘</span></td>';
-    cols.forEach(function(c) {
-      var v = m.valoresPorCategoria[c] || 0; totais[c] += v;
-      html += '<td class="text-end ' + (v>0?'text-success fw-bold':v<0?'text-danger fw-bold':'text-muted') + '">' + moeda(v) + '</td>';
+  dados.meses.forEach(function(m,idx){
+    if (mesesFilt.length && !mesesFilt.includes(m.mesAno)) return;
+    var gid='gaveta-'+id+'-'+idx;
+    var atual=m.mesAno===mesAtualChave;
+    var totLinha=0;
+    cols.forEach(function(c){totLinha+=(m.valoresPorCategoria[c]||0);});
+    acum+=totLinha;
+    html+='<tr class="linha-mae'+(atual?' linha-mes-atual':'')+'" onclick="slider(\''+gid+'\')">';
+    html+='<td class="coluna-fixa"><strong class="'+corCls+'">'+m.mesAno+'</strong>';
+    if(atual) html+=' <span class="badge bg-warning text-dark" style="font-size:0.6rem;">hoje</span>';
+    html+=' <span style="color:#94a3b8;font-size:0.7rem;">⬘</span></td>';
+    cols.forEach(function(c){
+      var v=m.valoresPorCategoria[c]||0; totais[c]+=v;
+      html+='<td class="text-end '+(v>0?'text-success fw-bold':v<0?'text-danger fw-bold':'text-muted')+'">'+moeda(v)+'</td>';
     });
-    html += '<td class="text-end fw-bold ' + (totLinha>=0?'text-success':'text-danger') + '">' + moeda(totLinha) + '</td>';
-    html += '<td class="text-end fw-bold ' + (acum>=0?'text-success':'text-danger') + '" style="background:#f8fafc;">' + moeda(acum) + '</td>';
-    html += '</tr>';
-
-    html += '<tr id="' + gid + '" class="linha-detalhe"><td colspan="' + (cols.length+3) + '" style="padding:0!important;border:none!important;">';
-    html += '<div class="slider-conteudo" id="' + gid + '-conteudo">';
-    html += '<table class="tabela-filha"><colgroup>' + cg + '</colgroup><tbody>';
-
-    (m.detalhes || []).forEach(function(reg) {
-      if (catsFiltro.length && !catsFiltro.includes(reg.categoria)) return;
-      html += '<tr><td title="#' + reg.linhaPlanilha + ' — ' + reg.data + ' — ' + reg.descricao + '">';
-      html += '<small class="text-muted font-monospace me-1">#' + reg.linhaPlanilha + '</small>';
-      html += '<strong class="me-1">' + reg.data + '</strong><span>' + reg.descricao + '</span></td>';
-      cols.forEach(function(c) {
-        if (reg.categoria === c) html += '<td class="text-end fw-semibold ' + (reg.valor>=0?'text-success':'text-danger') + '">' + moeda(reg.valor) + '</td>';
-        else html += '<td class="text-end text-muted" style="color:#ccc!important">-</td>';
+    html+='<td class="text-end fw-bold '+(totLinha>=0?'text-success':'text-danger')+'">'+moeda(totLinha)+'</td>';
+    html+='<td class="text-end fw-bold '+(acum>=0?'text-success':'text-danger')+'" style="background:#f8fafc;">'+moeda(acum)+'</td></tr>';
+    html+='<tr id="'+gid+'" class="linha-detalhe"><td colspan="'+(cols.length+3)+'" style="padding:0!important;border:none!important;">';
+    html+='<div class="slider-conteudo" id="'+gid+'-conteudo">';
+    html+='<table class="tabela-filha"><colgroup>'+cg+'</colgroup><tbody>';
+    (m.detalhes||[]).forEach(function(reg){
+      if(catsFilt.length&&!catsFilt.includes(reg.categoria)) return;
+      html+='<tr><td title="#'+reg.linhaPlanilha+' — '+reg.data+'">';
+      html+='<small class="text-muted me-1" style="font-family:monospace;">#'+reg.linhaPlanilha+'</small>';
+      html+='<strong class="me-1">'+reg.data+'</strong><span style="color:#475569;">'+reg.descricao+'</span></td>';
+      cols.forEach(function(c){
+        if(reg.categoria===c) html+='<td class="text-end fw-semibold '+(reg.valor>=0?'text-success':'text-danger')+'">'+moeda(reg.valor)+'</td>';
+        else html+='<td class="text-end" style="color:#e2e8f0;">—</td>';
       });
-      html += '<td class="text-end fw-bold ' + (reg.valor>=0?'text-success':'text-danger') + '">' + moeda(reg.valor) + '</td>';
-      html += '<td class="text-end text-muted" style="color:#ccc!important">-</td></tr>';
+      html+='<td class="text-end fw-bold '+(reg.valor>=0?'text-success':'text-danger')+'">'+moeda(reg.valor)+'</td>';
+      html+='<td style="color:#e2e8f0;" class="text-end">—</td></tr>';
     });
-
-    html += '</tbody></table></div></td></tr>';
+    html+='</tbody></table></div></td></tr>';
   });
-  tbody.innerHTML = html;
+  tbody.innerHTML=html;
 
-  var fHtml = '<tr><td class="coluna-fixa-largura">TOTAL GERAL</td>';
-  cols.forEach(function(c){ fHtml += '<td class="text-end ' + (totais[c]>=0?'text-success':'text-danger') + '">' + moeda(totais[c]) + '</td>'; });
-  fHtml += '<td class="text-end bg-dark text-white fw-bold border-start border-2">' + moeda(acum) + '</td>';
-  fHtml += '<td class="text-end text-muted" style="background:#e9ecef;">-</td></tr>';
-  tfoot.innerHTML = fHtml;
-
+  var fHtml='<tr><td class="coluna-fixa" style="font-weight:700;">TOTAL GERAL</td>';
+  cols.forEach(function(c){fHtml+='<td class="text-end '+(totais[c]>=0?'text-success':'text-danger')+'">'+moeda(totais[c])+'</td>';});
+  fHtml+='<td class="text-end fw-bold" style="background:#1e293b;color:white;">'+moeda(acum)+'</td>';
+  fHtml+='<td class="text-end text-muted" style="background:#f1f5f9;">—</td></tr>';
+  tfoot.innerHTML=fHtml;
   container.classList.remove('d-none');
+
+  // Renderiza cards mobile também
+  renderCardsMobile(id, dados, mesesFilt, catsFilt, corCls);
+  ABA_RENDERIZADA[id] = true;
+}
+
+// ══════════════════════════════════════════════════════════
+// CARDS MOBILE
+// ══════════════════════════════════════════════════════════
+function renderCardsMobile(id, dados, mesesFilt, catsFilt, corCls) {
+  var wrap = document.getElementById('cards-'+id);
+  if (!wrap) return;
+  var cols = dados.categorias.filter(function(c){ return !catsFilt.length||catsFilt.includes(c); });
+  var agora=new Date(), mesAtualChave=pad2(agora.getMonth()+1)+'/'+agora.getFullYear();
+  var html='';
+  dados.meses.forEach(function(m,idx){
+    if (mesesFilt.length && !mesesFilt.includes(m.mesAno)) return;
+    var atual=m.mesAno===mesAtualChave;
+    var totLinha=0; cols.forEach(function(c){totLinha+=(m.valoresPorCategoria[c]||0);});
+    var corTotal=totLinha>=0?'text-success':'text-danger';
+    html+='<div class="card-mes'+(atual?' mes-atual':'')+'" id="cmo-'+id+'-'+idx+'">';
+    html+='<div class="card-mes-header" onclick="toggleCardMes(\'cmo-'+id+'-'+idx+'\')">';
+    html+='<div class="card-mes-titulo">';
+    if(atual) html+='<span style="color:var(--cor-warning);">▶</span>';
+    html+='<span>'+m.mesAno+'</span>';
+    if(atual) html+='<span class="badge bg-warning text-dark" style="font-size:0.6rem;">hoje</span>';
+    html+='</div>';
+    html+='<div style="display:flex;align-items:center;gap:8px;">';
+    html+='<span class="card-mes-total '+corTotal+'">'+moeda(totLinha)+'</span>';
+    html+='<span class="card-mes-seta">▾</span></div></div>';
+    html+='<div class="card-mes-corpo">';
+    // Categorias
+    cols.forEach(function(c){
+      var v=m.valoresPorCategoria[c]||0;
+      if(v===0) return;
+      html+='<div class="card-cat-linha"><span class="card-cat-nome">'+c+'</span>';
+      html+='<span class="card-cat-valor '+(v>0?'text-success':'text-danger')+'">'+moeda(v)+'</span></div>';
+    });
+    // Registros
+    var regs=(m.detalhes||[]).filter(function(r){return !catsFilt.length||catsFilt.includes(r.categoria);});
+    if(regs.length) {
+      html+='<div class="card-registros">';
+      regs.forEach(function(r){
+        html+='<div class="card-reg">';
+        html+='<span class="card-reg-desc">'+r.descricao+'</span>';
+        html+='<span class="card-reg-meta">'+r.data+' · '+r.categoria+' · #'+r.linhaPlanilha+'</span>';
+        html+='<span class="card-reg-valor '+(r.valor>=0?'text-success':'text-danger')+'">'+moeda(r.valor)+'</span>';
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  });
+  wrap.innerHTML = html;
+}
+
+function toggleCardMes(id) {
+  var card = document.getElementById(id);
+  if (card) card.classList.toggle('aberto');
 }
 
 function slider(id) {
-  var row = document.getElementById(id), box = document.getElementById(id+'-conteudo');
-  if (!row||!box) return;
-  if (row.style.display === 'table-row') { box.style.maxHeight='0px'; setTimeout(function(){ row.style.display='none'; }, 300); }
-  else { row.style.display='table-row'; box.style.maxHeight = box.scrollHeight+'px'; }
+  var row=document.getElementById(id), box=document.getElementById(id+'-conteudo');
+  if(!row||!box) return;
+  if(row.style.display==='table-row'){box.style.maxHeight='0px';setTimeout(function(){row.style.display='none';},280);}
+  else{row.style.display='table-row';box.style.maxHeight=box.scrollHeight+'px';}
 }
 
 // ══════════════════════════════════════════════════════════
-// RESUMO / ORÇAMENTO
+// RESUMO
 // ══════════════════════════════════════════════════════════
 function calcularResumo() {
   if (!DADOS_RESUMO) return;
-  document.getElementById('loading-resumo').classList.add('d-none');
+  var sk = document.getElementById('sk-resumo'); if(sk) sk.style.display='none';
   document.getElementById('container-resumo').classList.remove('d-none');
+  var tF=selectVals('filtro-resumo-tipo'), cF=selectVals('filtro-resumo-cat');
+  var rBase=0, dBase=0;
+  DADOS_RESUMO.rendas.forEach(function(r){rBase+=r.valor;});
+  DADOS_RESUMO.despesas.forEach(function(d){dBase+=d.valor;});
+  var rFilt=0, dFilt=0, pTipos={}, pCats={}, html='';
 
-  var tiposFiltro = selectVals('filtro-resumo-tipo');
-  var catsFiltro  = selectVals('filtro-resumo-cat');
-  var rendaBase = 0, despBase = 0;
-  DADOS_RESUMO.rendas.forEach(function(r){ rendaBase   += r.valor; });
-  DADOS_RESUMO.despesas.forEach(function(d){ despBase  += d.valor; });
-
-  var rendaFilt = 0, despFilt = 0, pizzaTipos = {}, pizzaCats = {}, html = '';
-
-  DADOS_RESUMO.rendas.forEach(function(item) {
-    if (tiposFiltro.length && !tiposFiltro.includes(item.tipo)) return;
-    if (catsFiltro.length  && !catsFiltro.includes(item.categoria)) return;
-    rendaFilt += item.valor;
-    pizzaTipos[item.tipo]      = (pizzaTipos[item.tipo]      || 0) + item.valor;
-    pizzaCats[item.categoria]  = (pizzaCats[item.categoria]  || 0) + item.valor;
-    html += '<tr class="table-success" style="opacity:0.9;"><td><strong class="text-success">➕ ENTRADA</strong></td><td><span class="badge bg-success">' + item.tipo + '</span></td><td><strong>' + item.categoria + '</strong></td><td>' + item.descricao + '</td><td class="text-end fw-bold text-success">' + moeda(item.valor) + '</td><td class="text-end text-muted">-</td><td class="text-end text-muted">-</td><td class="text-end fw-bold text-success">' + moeda(item.valor) + '</td><td class="text-center text-muted"><small>#F' + item.linhaPlanilha + '</small></td></tr>';
+  DADOS_RESUMO.rendas.forEach(function(item){
+    if(tF.length&&!tF.includes(item.tipo)) return;
+    if(cF.length&&!cF.includes(item.categoria)) return;
+    rFilt+=item.valor; pTipos[item.tipo]=(pTipos[item.tipo]||0)+item.valor; pCats[item.categoria]=(pCats[item.categoria]||0)+item.valor;
+    html+='<tr style="background:#f0fdf4;"><td><strong class="text-success" style="font-size:0.8rem;">➕ ENTRADA</strong></td><td><span class="badge bg-success" style="font-size:0.7rem;">'+item.tipo+'</span></td><td><strong style="font-size:0.82rem;">'+item.categoria+'</strong></td><td style="font-size:0.82rem;">'+item.descricao+'</td><td class="text-end fw-bold text-success">'+moeda(item.valor)+'</td><td class="text-end text-muted">—</td><td>—</td><td class="text-end fw-bold text-success">'+moeda(item.valor)+'</td><td class="text-center text-muted"><small>#F'+item.linhaPlanilha+'</small></td></tr>';
   });
-
-  DADOS_RESUMO.despesas.forEach(function(item) {
-    if (tiposFiltro.length && !tiposFiltro.includes(item.tipo)) return;
-    if (catsFiltro.length  && !catsFiltro.includes(item.categoria)) return;
-    despFilt += item.valor;
-    pizzaTipos[item.tipo]     = (pizzaTipos[item.tipo]     || 0) + item.valor;
-    pizzaCats[item.categoria] = (pizzaCats[item.categoria] || 0) + item.valor;
-    var pOrc    = despBase   > 0 ? (item.valor/despBase*100).toFixed(1)+'%' : '-';
-    var pRenda  = rendaBase  > 0 ?  item.valor/rendaBase*100 : 0;
-    var cor     = pRenda<=10 ? '#198754' : pRenda<=25 ? '#ffc107' : '#dc3545';
-    var barra   = '<div class="progresso-wrap"><div class="progresso-trilho"><div class="progresso-barra" style="width:'+Math.min(pRenda,100)+'%;background:'+cor+';"></div></div><span class="progresso-label" style="color:'+cor+';">'+pRenda.toFixed(1)+'%</span></div>';
-    html += '<tr><td><strong class="text-danger">➖ SAÍDA</strong></td><td><span class="badge '+(item.tipo==='FIXA'?'bg-primary':'bg-warning text-dark')+'">'+item.tipo+'</span></td><td><strong>'+item.categoria+'</strong></td><td class="text-secondary">'+item.descricao+'</td><td class="text-end fw-bold">'+moeda(item.valor)+'</td><td class="text-end text-muted">'+pOrc+'</td><td>'+barra+'</td><td class="text-end fw-bold text-danger">'+moeda(-item.valor)+'</td><td class="text-center text-muted"><small>#A'+item.linhaPlanilha+'</small></td></tr>';
+  DADOS_RESUMO.despesas.forEach(function(item){
+    if(tF.length&&!tF.includes(item.tipo)) return;
+    if(cF.length&&!cF.includes(item.categoria)) return;
+    dFilt+=item.valor; pTipos[item.tipo]=(pTipos[item.tipo]||0)+item.valor; pCats[item.categoria]=(pCats[item.categoria]||0)+item.valor;
+    var pOrc=dBase>0?(item.valor/dBase*100).toFixed(1)+'%':'—';
+    var pR=rBase>0?item.valor/rBase*100:0;
+    var cor=pR<=10?'#198754':pR<=25?'#f59e0b':'#dc3545';
+    var barra='<div class="progresso-wrap"><div class="progresso-trilho"><div class="progresso-barra" style="width:'+Math.min(pR,100)+'%;background:'+cor+';"></div></div><span class="progresso-label" style="color:'+cor+';">'+pR.toFixed(1)+'%</span></div>';
+    html+='<tr><td><strong class="text-danger" style="font-size:0.8rem;">➖ SAÍDA</strong></td><td><span class="badge '+(item.tipo==='FIXA'?'bg-primary':'bg-warning text-dark')+'" style="font-size:0.7rem;">'+item.tipo+'</span></td><td><strong style="font-size:0.82rem;">'+item.categoria+'</strong></td><td class="text-secondary" style="font-size:0.82rem;">'+item.descricao+'</td><td class="text-end fw-bold">'+moeda(item.valor)+'</td><td class="text-end text-muted" style="font-size:0.8rem;">'+pOrc+'</td><td>'+barra+'</td><td class="text-end fw-bold text-danger">'+moeda(-item.valor)+'</td><td class="text-center text-muted"><small>#A'+item.linhaPlanilha+'</small></td></tr>';
   });
+  document.getElementById('body-resumo').innerHTML=html;
 
-  document.getElementById('body-resumo').innerHTML = html;
+  var saldo=rFilt-dFilt;
+  var pOrcT=dBase>0?(dFilt/dBase*100).toFixed(1)+'%':'100%';
+  var pRndT=rBase>0?(dFilt/rBase*100).toFixed(1)+'%':'0.0%';
+  document.getElementById('footer-resumo').innerHTML=
+    '<tr class="table-light"><td colspan="4"><strong>💰 ENTRADAS FILTRADAS</strong></td><td class="text-end fw-bold text-success">'+moeda(rFilt)+'</td><td colspan="4" class="bg-light"></td></tr>'+
+    '<tr class="table-light"><td colspan="4"><strong>💸 SAÍDAS FILTRADAS</strong></td><td class="text-end fw-bold">'+moeda(dFilt)+'</td><td class="text-end text-muted fw-bold">'+pOrcT+'</td><td class="text-end fw-bold" style="color:var(--cor-azul);">'+pRndT+'</td><td colspan="2" class="bg-light"></td></tr>'+
+    '<tr class="'+(saldo>=0?'table-success':'table-danger')+'"><td colspan="7"><strong>📊 SALDO LÍQUIDO</strong></td><td class="text-end fw-bold '+(saldo>=0?'text-success':'text-danger')+'" style="font-size:1rem;">'+moeda(saldo)+'</td><td class="text-center text-muted" style="font-size:0.78rem;">'+(rBase>0&&saldo>=0?(saldo/rBase*100).toFixed(1)+'% da Renda':'')+'</td></tr>';
 
-  var saldo     = rendaFilt - despFilt;
-  var pOrcT     = despBase  > 0 ? (despFilt/despBase*100).toFixed(1)+'%' : '100%';
-  var pRendaT   = rendaBase > 0 ? (despFilt/rendaBase*100).toFixed(1)+'%' : '0.0%';
+  var sobra=rBase-dBase, pSobra=rBase>0?(sobra/rBase*100).toFixed(1):'0.0';
+  document.getElementById('m-total-renda').innerText    =moeda(rBase);
+  document.getElementById('m-total-despesa').innerText  =moeda(dBase);
+  document.getElementById('m-comprometimento').innerText=rBase>0?(dBase/rBase*100).toFixed(1)+'%':'0.0%';
+  document.getElementById('m-saldo-livre').innerHTML    =moeda(sobra)+' <span style="font-size:0.9rem;font-weight:600;color:var(--cor-roxo);">('+pSobra+'%)</span>';
 
-  document.getElementById('footer-resumo').innerHTML = '<tr class="table-light"><td colspan="4"><strong>💰 TOTAL ENTRADAS FILTRADAS</strong></td><td class="text-end fw-bold text-success">'+moeda(rendaFilt)+'</td><td colspan="4" class="bg-light"></td></tr><tr class="table-light"><td colspan="4"><strong>💸 TOTAL SAÍDAS FILTRADAS</strong></td><td class="text-end fw-bold">'+moeda(despFilt)+'</td><td class="text-end text-muted fw-bold">'+pOrcT+'</td><td class="text-end text-primary fw-bold">'+pRendaT+'</td><td colspan="2" class="bg-light"></td></tr><tr class="'+(saldo>=0?'table-success':'table-danger')+'"><td colspan="7"><strong>📊 SALDO LÍQUIDO</strong></td><td class="text-end fw-bold '+(saldo>=0?'text-success':'text-danger')+'" style="font-size:1rem;">'+moeda(saldo)+'</td><td class="text-center fw-bold text-muted" style="font-size:0.8rem;">'+(rendaBase>0&&saldo>=0?(saldo/rendaBase*100).toFixed(1)+'% da Renda':'')+'</td></tr>';
-
-  var sobra   = rendaBase - despBase;
-  var pSobra  = rendaBase > 0 ? (sobra/rendaBase*100).toFixed(1) : '0.0';
-  document.getElementById('m-total-renda').innerText     = moeda(rendaBase);
-  document.getElementById('m-total-despesa').innerText   = moeda(despBase);
-  document.getElementById('m-comprometimento').innerText = rendaBase > 0 ? (despBase/rendaBase*100).toFixed(1)+'%' : '0.0%';
-  document.getElementById('m-saldo-livre').innerHTML     = moeda(sobra) + ' <span class="fs-6 fw-semibold" style="color:#6f42c1;">('+pSobra+'%)</span>';
-
-  var cores = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#fd7e14','#0dcaf0','#e83e8c','#20c997'];
-  var ctx1 = document.getElementById('graficoSubtotais').getContext('2d');
-  if (GRAFICO) GRAFICO.destroy();
-  GRAFICO = new Chart(ctx1, { type:'doughnut', data:{ labels:Object.keys(pizzaTipos), datasets:[{ data:Object.values(pizzaTipos), backgroundColor:cores }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'left'}, title:{display:true,text:'Visão por Tipo'} }}});
-  var ctx2 = document.getElementById('graficoPizzaResumo').getContext('2d');
-  if (PIZZA) PIZZA.destroy();
-  PIZZA = new Chart(ctx2, { type:'pie', data:{ labels:Object.keys(pizzaCats), datasets:[{ data:Object.values(pizzaCats), backgroundColor:[...cores].reverse() }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right',labels:{boxWidth:10,font:{size:9}}}, title:{display:true,text:'Visão por Categorias'} }}});
+  var cores=['#0d6efd','#198754','#f59e0b','#dc3545','#6f42c1','#fd7e14','#0dcaf0','#e83e8c','#20c997'];
+  var ctx1=document.getElementById('graficoSubtotais').getContext('2d');
+  if(GRAFICO) GRAFICO.destroy();
+  GRAFICO=new Chart(ctx1,{type:'doughnut',data:{labels:Object.keys(pTipos),datasets:[{data:Object.values(pTipos),backgroundColor:cores,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'left',labels:{font:{size:11},boxWidth:12}},title:{display:true,text:'Por Tipo',font:{size:11}}}}});
+  var ctx2=document.getElementById('graficoPizzaResumo').getContext('2d');
+  if(PIZZA) PIZZA.destroy();
+  PIZZA=new Chart(ctx2,{type:'pie',data:{labels:Object.keys(pCats),datasets:[{data:Object.values(pCats),backgroundColor:[...cores].reverse(),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:9}}},title:{display:true,text:'Por Categoria',font:{size:11}}}}});
 }
 
 // ══════════════════════════════════════════════════════════
 // GRÁFICO HISTÓRICO
 // ══════════════════════════════════════════════════════════
 function atualizarGrafico() {
-  if (ABA === 'resumo') return;
-  var dados = ABA === 'lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
-  if (!dados||!dados.meses) return;
-  var mesesF = selectVals('filtro-mes'), catsF = selectVals('filtro-categoria');
-  var meses  = dados.meses.filter(function(m){ return !mesesF.length||mesesF.includes(m.mesAno); });
-  var cats   = dados.categorias.filter(function(c){ return !catsF.length||catsF.includes(c); });
-  var cores  = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#fd7e14','#0dcaf0','#e83e8c'];
-  var ctx    = document.getElementById('graficoSubtotais').getContext('2d');
-  if (GRAFICO) GRAFICO.destroy();
-  GRAFICO = new Chart(ctx, { type:'bar', data:{ labels:meses.map(function(m){return m.mesAno;}), datasets:cats.map(function(c,i){ return { label:c, data:meses.map(function(m){return m.valoresPorCategoria[c]||0;}), backgroundColor:cores[i%cores.length], borderRadius:4 };})}, options:{ responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true}} }});
+  if(ABA==='resumo') return;
+  var dados=ABA==='lancamentos'?DADOS_LANCAMENTOS:DADOS_CARTAO;
+  if(!dados||!dados.meses) return;
+  var mF=selectVals('filtro-mes'),cF=selectVals('filtro-categoria');
+  var meses=dados.meses.filter(function(m){return!mF.length||mF.includes(m.mesAno);});
+  var cats=dados.categorias.filter(function(c){return!cF.length||cF.includes(c);});
+  var cores=['#0d6efd','#198754','#f59e0b','#dc3545','#6f42c1','#fd7e14','#0dcaf0','#e83e8c'];
+  var ctx=document.getElementById('graficoSubtotais').getContext('2d');
+  if(GRAFICO) GRAFICO.destroy();
+  GRAFICO=new Chart(ctx,{type:'bar',data:{labels:meses.map(function(m){return m.mesAno;}),datasets:cats.map(function(c,i){return{label:c,data:meses.map(function(m){return m.valoresPorCategoria[c]||0;}),backgroundColor:cores[i%cores.length],borderRadius:4};})},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,ticks:{font:{size:10}}},y:{stacked:true,ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:10},boxWidth:10}}}}});
 }
 
 // ══════════════════════════════════════════════════════════
-// UTILITÁRIOS
+// UTILS
 // ══════════════════════════════════════════════════════════
-function moeda(v) { return (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-function pad2(n)  { return String(n).padStart(2,'0'); }
+function moeda(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function pad2(n){return String(n).padStart(2,'0');}
 </script>
 </body>
 </html>
