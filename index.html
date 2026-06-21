@@ -546,6 +546,7 @@
             <div class="chips-wrap" id="chips-bkp-conta"></div>
             <div class="chips-wrap" id="chips-bkp-tipo"></div>
             <button class="btn btn-sm btn-outline-secondary btn-historico" id="btn-hist-bkp" onclick="carregarHistorico('bkp')">📂 Histórico completo</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="limparFiltrosExt('bkp')">✕ Limpar</button>
             <span class="ext-total" id="ext-bkp-total"></span>
           </div>
           <div id="sk-ext-bkp">
@@ -578,6 +579,7 @@
             <div class="chips-wrap" id="chips-cartao-cartao"></div>
             <div class="chips-wrap" id="chips-cartao-tipo"></div>
             <button class="btn btn-sm btn-outline-secondary btn-historico" id="btn-hist-cartao" onclick="carregarHistorico('cartao')">📂 Histórico completo</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="limparFiltrosExt('cartao')">✕ Limpar</button>
             <span class="ext-total" id="ext-cartao-total"></span>
           </div>
           <div id="sk-ext-cartao">
@@ -621,7 +623,7 @@
         <span class="icon">📋</span><span class="bnav-label">Ext.Gerais</span>
       </button>
       <button class="bnav-btn" id="bnav-ext-cartao" onclick="alternarAba('ext-cartao')">
-        <span class="icon">💳</span><span class="bnav-label">Cartão</span>
+        <span class="icon">💳</span><span class="bnav-label">Ext.Cart.</span>
       </button>
     </div>
   </nav>
@@ -1452,6 +1454,21 @@ function renderizarExtrato(tipo, lista) {
     });
     cardsWrap.innerHTML = cHtml;
   }
+}
+
+function limparFiltrosExt(tipo) {
+  // Limpa busca
+  var busca = document.getElementById('ext-' + tipo + '-busca');
+  if (busca) busca.value = '';
+  // Remove todos os chips ativos
+  if (tipo === 'bkp') {
+    document.querySelectorAll('#chips-bkp-conta .ativo-azul, #chips-bkp-tipo .ativo-roxo')
+      .forEach(function(c){ c.classList.remove('ativo-azul','ativo-roxo'); });
+  } else {
+    document.querySelectorAll('#chips-cartao-cartao .ativo-azul, #chips-cartao-tipo .ativo-roxo')
+      .forEach(function(c){ c.classList.remove('ativo-azul','ativo-roxo'); });
+  }
+  filtrarExt(tipo);
 }
 
 // ══════════════════════════════════════════════════════════
