@@ -281,11 +281,13 @@
     .ext-table td { padding:7px 12px; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .ext-table tfoot td { position:sticky; bottom:0; background:#f1f5f9; font-weight:700; padding:8px 12px; border-top:2px solid #94a3b8; }
     /* Larguras das colunas — cabe sem scroll horizontal */
-    .ext-table .col-data  { width:90px; }
-    .ext-table .col-conta { width:18%; }
+    .ext-table .col-data  { width:96px; min-width:96px; }
+    .ext-table .col-conta { width:16%; min-width:80px; }
     .ext-table .col-desc  { width:auto; }
-    .ext-table .col-tipo  { width:100px; }
-    .ext-table .col-valor { width:110px; text-align:right; }
+    .ext-table .col-tipo  { width:80px; min-width:60px; }
+    .ext-table .col-valor { width:130px; min-width:130px; text-align:right; }
+    .ext-table td.col-data  { white-space:nowrap; overflow:visible; }
+    .ext-table td.col-valor { white-space:nowrap; overflow:visible; }
     .badge-tipo { font-size:0.68rem; padding:2px 7px; border-radius:999px; background:#f1f5f9; color:#475569; font-weight:600; }
     .ext-valor-pos { color:#15803d; font-weight:700; }
     .ext-valor-neg { color:#dc2626; font-weight:700; }
@@ -1010,7 +1012,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
     document.getElementById('col-grafico-pizza').classList.remove('d-none');
-    document.getElementById('titulo-grafico').closest('.container-card').style.display = '';
+    var _gc1 = document.getElementById('titulo-grafico').closest('.container-card'); if(_gc1){ _gc1.style.cssText=''; }
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
@@ -1019,8 +1021,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    // Oculta gráfico nas abas de extrato
-    document.getElementById('titulo-grafico').closest('.container-card').style.display = 'none';
+    var _gc = document.getElementById('titulo-grafico').closest('.container-card'); if(_gc){ _gc.style.display='none'; _gc.style.height='0'; _gc.style.margin='0'; _gc.style.padding='0'; _gc.style.overflow='hidden'; }
     setTimeout(ajustarAlturas, 50);
     var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
     if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
@@ -1029,7 +1030,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    document.getElementById('titulo-grafico').closest('.container-card').style.display = '';
+    var _gc2 = document.getElementById('titulo-grafico').closest('.container-card'); if(_gc2){ _gc2.style.cssText=''; }
     document.getElementById('titulo-grafico').textContent = 'EVOLUÇÃO DOS SUBTOTAIS';
     setTimeout(ajustarAlturas, 50);
     var dados = aba==='lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
@@ -1377,19 +1378,19 @@ function renderizarExtrato(tipo, lista) {
       var corVal = r.valor >= 0 ? 'ext-valor-pos' : 'ext-valor-neg';
       if (tipo === 'bkp') {
         html += '<tr>';
-        html += '<td style="font-family:monospace;font-size:0.78rem;">' + r.data + '</td>';
-        html += '<td style="font-size:0.8rem;">' + (r.conta||'—') + '</td>';
-        html += '<td>' + r.descricao + '</td>';
-        html += '<td><span class="badge-tipo">' + (r.tipo||'—') + '</span></td>';
-        html += '<td class="text-end ' + corVal + '">' + moeda(r.valor) + '</td>';
+        html += '<td class="col-data" style="font-family:monospace;font-size:0.82rem;">' + r.data + '</td>';
+        html += '<td class="col-conta" style="font-size:0.8rem;">' + (r.conta||'—') + '</td>';
+        html += '<td class="col-desc">' + r.descricao + '</td>';
+        html += '<td class="col-tipo"><span class="badge-tipo">' + (r.tipo||'—') + '</span></td>';
+        html += '<td class="col-valor ' + corVal + '">' + moeda(r.valor) + '</td>';
         html += '</tr>';
       } else {
         html += '<tr>';
-        html += '<td style="font-family:monospace;font-size:0.78rem;">' + (r.data||'—') + '</td>';
-        html += '<td style="font-size:0.8rem;">' + (r.cartao||'—') + '</td>';
-        html += '<td>' + r.descricao + '</td>';
-        html += '<td><span class="badge-tipo">' + (r.tipo||'—') + '</span></td>';
-        html += '<td class="text-end ' + corVal + '">' + moeda(r.valor) + '</td>';
+        html += '<td class="col-data" style="font-family:monospace;font-size:0.82rem;">' + (r.data||'—') + '</td>';
+        html += '<td class="col-conta" style="font-size:0.8rem;">' + (r.cartao||'—') + '</td>';
+        html += '<td class="col-desc">' + r.descricao + '</td>';
+        html += '<td class="col-tipo"><span class="badge-tipo">' + (r.tipo||'—') + '</span></td>';
+        html += '<td class="col-valor ' + corVal + '">' + moeda(r.valor) + '</td>';
         html += '</tr>';
       }
     });
