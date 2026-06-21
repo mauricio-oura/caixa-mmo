@@ -257,6 +257,39 @@
 
     /* ── MÉTRICAS RESUMO ── */
     .card-metrica { border-radius: 10px; padding: 14px; border-left: 4px solid #e2e8f0; background: white; }
+
+    /* ── EXTRATO ── */
+    #tab-ext-bkp.active    { background: #0891b2; }
+    #tab-ext-cartao.active { background: #7c3aed; }
+    .bnav-btn.ativo.ciano  { color: #0891b2; border-top-color: #0891b2; }
+    .bnav-btn.ativo.violeta{ color: #7c3aed; border-top-color: #7c3aed; }
+    .app-header.aba-ext-bkp    { border-bottom-color: #0891b2; }
+    .app-header.aba-ext-cartao { border-bottom-color: #7c3aed; }
+
+    .ext-toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+    .ext-busca { flex:1; min-width:160px; font-size:0.82rem; padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; }
+    .ext-busca:focus { border-color:var(--cor-azul); box-shadow:0 0 0 2px #dbeafe; }
+    .ext-total { font-size:0.75rem; color:#94a3b8; white-space:nowrap; }
+    .btn-historico { font-size:0.75rem; padding:4px 10px; white-space:nowrap; }
+
+    /* Tabela extrato desktop */
+    .ext-table-wrap { max-height:55vh; overflow:auto; border:1px solid #e2e8f0; border-radius:8px; }
+    .ext-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+    .ext-table thead th { position:sticky; top:0; z-index:2; background:#1e293b; color:white; padding:9px 12px; text-align:left; white-space:nowrap; }
+    .ext-table tbody tr { border-bottom:1px solid #f1f5f9; transition:background 0.1s; }
+    .ext-table tbody tr:hover { background:#f8fafc; }
+    .ext-table td { padding:7px 12px; vertical-align:middle; }
+    .ext-table tfoot td { position:sticky; bottom:0; background:#f1f5f9; font-weight:700; padding:8px 12px; border-top:2px solid #94a3b8; }
+    .badge-tipo { font-size:0.68rem; padding:2px 7px; border-radius:999px; background:#f1f5f9; color:#475569; font-weight:600; }
+    .ext-valor-pos { color:#15803d; font-weight:700; }
+    .ext-valor-neg { color:#dc2626; font-weight:700; }
+
+    /* Cards mobile extrato */
+    .ext-card { background:white; border-radius:10px; border:1px solid #e2e8f0; padding:11px 14px; margin-bottom:7px; }
+    .ext-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px; }
+    .ext-card-desc { font-weight:600; font-size:0.85rem; color:#1e293b; flex:1; }
+    .ext-card-val { font-weight:700; font-size:0.9rem; white-space:nowrap; }
+    .ext-card-meta { font-size:0.72rem; color:#94a3b8; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
     /* ── EXTRATO ── */
     .badge-origem-bkp    { background:#e0f2fe; color:#0369a1; }
     .badge-origem-lanc   { background:#dcfce7; color:#15803d; }
@@ -389,6 +422,8 @@
       <li class="nav-item"><button class="nav-link nav-link-sm active" id="tab-lancamentos" data-bs-toggle="pill" data-bs-target="#painel-lancamentos" onclick="alternarAba('lancamentos')">Gerais</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-cartao" data-bs-toggle="pill" data-bs-target="#painel-cartao" onclick="alternarAba('cartao')">Cartão</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" onclick="alternarAba('resumo')">🎯 Planejado</button></li>
+      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-bkp" data-bs-toggle="pill" data-bs-target="#painel-ext-bkp" onclick="alternarAba('ext-bkp')">📋 Desp. Gerais</button></li>
+      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-cartao" data-bs-toggle="pill" data-bs-target="#painel-ext-cartao" onclick="alternarAba('ext-cartao')">💳 Desp. Cartão</button></li>
     </ul>
   </div>
 
@@ -489,6 +524,77 @@
       </div>
       </div>
 
+
+      <!-- ABA DESP. GERAIS (bkp) -->
+      <div class="tab-pane fade" id="painel-ext-bkp">
+        <div class="container-card">
+          <div class="ext-toolbar">
+            <input class="ext-busca" id="ext-bkp-busca" type="text" placeholder="🔍 Descrição, conta, tipo..." oninput="filtrarExt('bkp')">
+            <div class="chips-wrap" id="chips-bkp-conta"></div>
+            <div class="chips-wrap" id="chips-bkp-tipo"></div>
+            <button class="btn btn-sm btn-outline-secondary btn-historico" id="btn-hist-bkp" onclick="carregarHistorico('bkp')">📂 Histórico completo</button>
+            <span class="ext-total" id="ext-bkp-total"></span>
+          </div>
+          <div id="sk-ext-bkp">
+            <div class="skeleton sk-titulo"></div>
+            <div class="skeleton sk-linha" style="width:100%"></div>
+            <div class="skeleton sk-linha" style="width:88%"></div>
+            <div class="skeleton sk-linha" style="width:94%"></div>
+          </div>
+          <div id="ct-ext-bkp" class="d-none">
+            <div class="ext-table-wrap tabela-desktop">
+              <table class="ext-table">
+                <thead><tr>
+                  <th style="width:90px;">Data</th>
+                  <th style="width:130px;">Conta</th>
+                  <th>Descrição</th>
+                  <th style="width:110px;">Tipo</th>
+                  <th style="width:110px;" class="text-end">Valor</th>
+                </tr></thead>
+                <tbody id="body-ext-bkp"></tbody>
+                <tfoot><tr><td colspan="4" id="foot-ext-bkp-label">TOTAL</td><td class="text-end" id="foot-ext-bkp-val"></td></tr></tfoot>
+              </table>
+            </div>
+            <div class="cards-mobile" id="cards-ext-bkp"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA DESP. CARTÃO -->
+      <div class="tab-pane fade" id="painel-ext-cartao">
+        <div class="container-card">
+          <div class="ext-toolbar">
+            <input class="ext-busca" id="ext-cartao-busca" type="text" placeholder="🔍 Descrição, cartão, tipo..." oninput="filtrarExt('cartao')">
+            <div class="chips-wrap" id="chips-cartao-cartao"></div>
+            <div class="chips-wrap" id="chips-cartao-tipo"></div>
+            <button class="btn btn-sm btn-outline-secondary btn-historico" id="btn-hist-cartao" onclick="carregarHistorico('cartao')">📂 Histórico completo</button>
+            <span class="ext-total" id="ext-cartao-total"></span>
+          </div>
+          <div id="sk-ext-cartao">
+            <div class="skeleton sk-titulo"></div>
+            <div class="skeleton sk-linha" style="width:100%"></div>
+            <div class="skeleton sk-linha" style="width:90%"></div>
+            <div class="skeleton sk-linha" style="width:95%"></div>
+          </div>
+          <div id="ct-ext-cartao" class="d-none">
+            <div class="ext-table-wrap tabela-desktop">
+              <table class="ext-table">
+                <thead><tr>
+                  <th style="width:90px;">Fatura</th>
+                  <th style="width:130px;">Cartão</th>
+                  <th>Descrição</th>
+                  <th style="width:110px;">Tipo</th>
+                  <th style="width:110px;" class="text-end">Valor</th>
+                </tr></thead>
+                <tbody id="body-ext-cartao"></tbody>
+                <tfoot><tr><td colspan="4" id="foot-ext-cartao-label">TOTAL</td><td class="text-end" id="foot-ext-cartao-val"></td></tr></tfoot>
+              </table>
+            </div>
+            <div class="cards-mobile" id="cards-ext-cartao"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -503,6 +609,12 @@
       </button>
       <button class="bnav-btn" id="bnav-resumo" onclick="alternarAba('resumo')">
         <span class="icon">🎯</span><span class="bnav-label">Planejado</span>
+      </button>
+      <button class="bnav-btn" id="bnav-ext-bkp" onclick="alternarAba('ext-bkp')">
+        <span class="icon">📋</span><span class="bnav-label">Gerais</span>
+      </button>
+      <button class="bnav-btn" id="bnav-ext-cartao" onclick="alternarAba('ext-cartao')">
+        <span class="icon">💳</span><span class="bnav-label">Cartão</span>
       </button>
     </div>
   </nav>
@@ -527,6 +639,8 @@ const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas em ms
 // ══════════════════════════════════════════════════════════
 let TOKEN = null;
 let DADOS_LANCAMENTOS = null, DADOS_CARTAO = null, DADOS_RESUMO = null;
+let EXT_BKP = null, EXT_CARTAO = null;
+let EXT_BKP_FILTRADO = [], EXT_CARTAO_FILTRADO = [];
 let GRAFICO = null, PIZZA = null;
 let ABA = 'lancamentos';
 let ABA_RENDERIZADA = {};
@@ -873,15 +987,15 @@ function aplicarFiltros() {
 function alternarAba(aba) {
   ABA = aba;
   // Título dinâmico
-  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro'};
+  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro', 'ext-bkp':'📋 Desp. Gerais — Painel Financeiro', 'ext-cartao':'💳 Desp. Cartão — Painel Financeiro'};
   document.title = titulos[aba] || 'Painel Financeiro';
   // Header cor
   var hdr = document.getElementById('app-header');
   hdr.className = 'app-header aba-' + aba;
   // Bottom nav
   document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('ativo','verde','roxo'); });
-  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo'};
-  var bnavClsMap = {cartao:'verde',resumo:'roxo'};
+  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo','ext-bkp':'bnav-ext-bkp','ext-cartao':'bnav-ext-cartao'};
+  var bnavClsMap = {cartao:'verde',resumo:'roxo','ext-bkp':'ciano','ext-cartao':'violeta'};
   var btn = document.getElementById(bnavMap[aba]);
   if (btn) { btn.classList.add('ativo'); if(bnavClsMap[aba]) btn.classList.add(bnavClsMap[aba]); }
   // Tab pills desktop
@@ -899,6 +1013,15 @@ function alternarAba(aba) {
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
+  } else if (aba === 'ext-bkp' || aba === 'ext-cartao') {
+    document.getElementById('grupo-historico').classList.add('d-none');
+    document.getElementById('grupo-resumo').classList.add('d-none');
+    document.getElementById('col-grafico-principal').className = 'col-12';
+    document.getElementById('col-grafico-pizza').classList.add('d-none');
+    document.getElementById('titulo-grafico').textContent = aba === 'ext-bkp' ? 'DESPESAS GERAIS (BKP)' : 'DESPESAS CARTÃO';
+    setTimeout(ajustarAlturas, 50);
+    var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
+    if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
   } else {
     document.getElementById('grupo-historico').classList.remove('d-none');
     document.getElementById('grupo-resumo').classList.add('d-none');
@@ -1121,6 +1244,172 @@ function atualizarGrafico() {
   var ctx=document.getElementById('graficoSubtotais').getContext('2d');
   if(GRAFICO) GRAFICO.destroy();
   GRAFICO=new Chart(ctx,{type:'bar',data:{labels:meses.map(function(m){return m.mesAno;}),datasets:cats.map(function(c,i){return{label:c,data:meses.map(function(m){return m.valoresPorCategoria[c]||0;}),backgroundColor:cores[i%cores.length],borderRadius:4};})},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,ticks:{font:{size:10}}},y:{stacked:true,ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:10},boxWidth:10}}}}});
+}
+
+// ══════════════════════════════════════════════════════════
+// EXTRATO BKP + CARTÃO
+// ══════════════════════════════════════════════════════════
+function iniciarExtrato(tipo) {
+  var sk = document.getElementById('sk-ext-' + tipo);
+  if (sk) sk.style.display = 'block';
+  var ct = document.getElementById('ct-ext-' + tipo);
+  if (ct) ct.classList.add('d-none');
+
+  var acao = tipo === 'bkp' ? 'getDeltaBkp' : 'getDeltaCartao';
+  chamarGAS(acao).then(function(dados) {
+    if (tipo === 'bkp') EXT_BKP = dados;
+    else EXT_CARTAO = dados;
+    if (sk) sk.style.display = 'none';
+    if (ct) ct.classList.remove('d-none');
+    construirChipsExt(tipo);
+    filtrarExt(tipo);
+    ABA_RENDERIZADA['ext-' + tipo] = true;
+  }).catch(function(err) {
+    if (sk) sk.style.display = 'none';
+    toast('⚠️ Erro ao carregar extrato: ' + err.message, 5000);
+  });
+}
+
+function carregarHistorico(tipo) {
+  var btn = document.getElementById('btn-hist-' + tipo);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando...'; }
+  var acao = tipo === 'bkp' ? 'getHistoricoBkp' : 'getHistoricoCartao';
+  chamarGAS(acao).then(function(dados) {
+    if (tipo === 'bkp') EXT_BKP = dados;
+    else EXT_CARTAO = dados;
+    construirChipsExt(tipo);
+    filtrarExt(tipo);
+    if (btn) { btn.disabled = true; btn.textContent = '✅ Histórico carregado'; btn.classList.replace('btn-outline-secondary','btn-outline-success'); }
+    toast('✅ Histórico completo carregado — ' + dados.length + ' registros', 3000);
+  }).catch(function(err) {
+    if (btn) { btn.disabled = false; btn.textContent = '📂 Histórico completo'; }
+    toast('⚠️ Erro: ' + err.message, 5000);
+  });
+}
+
+function construirChipsExt(tipo) {
+  var dados = tipo === 'bkp' ? EXT_BKP : EXT_CARTAO;
+  if (!dados) return;
+
+  if (tipo === 'bkp') {
+    var contas = {}, tipos = {};
+    dados.forEach(function(r){ if(r.conta) contas[r.conta]=true; if(r.tipo) tipos[r.tipo]=true; });
+    renderChipsExt('chips-bkp-conta',  Object.keys(contas).sort(), 'ativo-azul',  function(){ filtrarExt('bkp'); });
+    renderChipsExt('chips-bkp-tipo',   Object.keys(tipos).sort(),  'ativo-roxo',  function(){ filtrarExt('bkp'); });
+  } else {
+    var cartoes = {}, tiposC = {};
+    dados.forEach(function(r){ if(r.cartao) cartoes[r.cartao]=true; if(r.tipo) tiposC[r.tipo]=true; });
+    renderChipsExt('chips-cartao-cartao', Object.keys(cartoes).sort(), 'ativo-azul',  function(){ filtrarExt('cartao'); });
+    renderChipsExt('chips-cartao-tipo',   Object.keys(tiposC).sort(),  'ativo-roxo',  function(){ filtrarExt('cartao'); });
+  }
+}
+
+function renderChipsExt(containerId, valores, cls, cb) {
+  var wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  valores.forEach(function(v) {
+    var c = document.createElement('span');
+    c.className = 'chip ' + cls; c.textContent = v; c.dataset.valor = v;
+    c.addEventListener('click', function(){ c.classList.toggle(cls); cb(); });
+    wrap.appendChild(c);
+  });
+}
+
+function chipsAtivosExt(containerId, cls) {
+  return Array.from(document.querySelectorAll('#' + containerId + ' .' + cls)).map(function(c){ return c.dataset.valor; });
+}
+
+function filtrarExt(tipo) {
+  var dados = tipo === 'bkp' ? EXT_BKP : EXT_CARTAO;
+  if (!dados) return;
+  var busca = (document.getElementById('ext-' + tipo + '-busca').value || '').toLowerCase();
+
+  var filtrado;
+  if (tipo === 'bkp') {
+    var contasFilt = chipsAtivosExt('chips-bkp-conta',  'ativo-azul');
+    var tiposFilt  = chipsAtivosExt('chips-bkp-tipo',   'ativo-roxo');
+    filtrado = dados.filter(function(r) {
+      if (contasFilt.length && !contasFilt.includes(r.conta)) return false;
+      if (tiposFilt.length  && !tiposFilt.includes(r.tipo))   return false;
+      if (busca && !r.descricao.toLowerCase().includes(busca) && !r.conta.toLowerCase().includes(busca) && !r.tipo.toLowerCase().includes(busca)) return false;
+      return true;
+    });
+    EXT_BKP_FILTRADO = filtrado;
+  } else {
+    var cartoesFilt = chipsAtivosExt('chips-cartao-cartao', 'ativo-azul');
+    var tiposCFilt  = chipsAtivosExt('chips-cartao-tipo',   'ativo-roxo');
+    filtrado = dados.filter(function(r) {
+      if (cartoesFilt.length && !cartoesFilt.includes(r.cartao)) return false;
+      if (tiposCFilt.length  && !tiposCFilt.includes(r.tipo))    return false;
+      if (busca && !r.descricao.toLowerCase().includes(busca) && !(r.cartao||'').toLowerCase().includes(busca) && !(r.tipo||'').toLowerCase().includes(busca)) return false;
+      return true;
+    });
+    EXT_CARTAO_FILTRADO = filtrado;
+  }
+
+  renderizarExtrato(tipo, filtrado);
+}
+
+function renderizarExtrato(tipo, lista) {
+  var total = 0;
+  lista.forEach(function(r){ total += r.valor; });
+
+  var totalEl = document.getElementById('ext-' + tipo + '-total');
+  if (totalEl) totalEl.textContent = lista.length + ' registro(s)';
+
+  // Desktop
+  var tbody = document.getElementById('body-ext-' + tipo);
+  var footLabel = document.getElementById('foot-ext-' + tipo + '-label');
+  var footVal   = document.getElementById('foot-ext-' + tipo + '-val');
+  if (tbody) {
+    var html = '';
+    lista.forEach(function(r) {
+      var corVal = r.valor >= 0 ? 'ext-valor-pos' : 'ext-valor-neg';
+      if (tipo === 'bkp') {
+        html += '<tr>';
+        html += '<td style="font-family:monospace;font-size:0.78rem;">' + r.data + '</td>';
+        html += '<td style="font-size:0.8rem;">' + (r.conta||'—') + '</td>';
+        html += '<td>' + r.descricao + '</td>';
+        html += '<td><span class="badge-tipo">' + (r.tipo||'—') + '</span></td>';
+        html += '<td class="text-end ' + corVal + '">' + moeda(r.valor) + '</td>';
+        html += '</tr>';
+      } else {
+        html += '<tr>';
+        html += '<td style="font-family:monospace;font-size:0.78rem;">' + (r.data||'—') + '</td>';
+        html += '<td style="font-size:0.8rem;">' + (r.cartao||'—') + '</td>';
+        html += '<td>' + r.descricao + '</td>';
+        html += '<td><span class="badge-tipo">' + (r.tipo||'—') + '</span></td>';
+        html += '<td class="text-end ' + corVal + '">' + moeda(r.valor) + '</td>';
+        html += '</tr>';
+      }
+    });
+    tbody.innerHTML = html;
+    if (footLabel) footLabel.textContent = 'TOTAL (' + lista.length + ' registros)';
+    if (footVal)   footVal.textContent = moeda(total);
+    footVal && (footVal.className = 'text-end ' + (total >= 0 ? 'ext-valor-pos' : 'ext-valor-neg'));
+  }
+
+  // Mobile cards
+  var cardsWrap = document.getElementById('cards-ext-' + tipo);
+  if (cardsWrap) {
+    var cHtml = '';
+    lista.forEach(function(r) {
+      var corVal = r.valor >= 0 ? 'ext-valor-pos' : 'ext-valor-neg';
+      cHtml += '<div class="ext-card">';
+      cHtml += '<div class="ext-card-top">';
+      cHtml += '<span class="ext-card-desc">' + r.descricao + '</span>';
+      cHtml += '<span class="ext-card-val ' + corVal + '">' + moeda(r.valor) + '</span>';
+      cHtml += '</div>';
+      cHtml += '<div class="ext-card-meta">';
+      cHtml += '<span>' + (r.data||'—') + '</span>';
+      if (tipo === 'bkp' && r.conta)   cHtml += '<span>·</span><span>' + r.conta + '</span>';
+      if (tipo === 'cartao' && r.cartao) cHtml += '<span>·</span><span>' + r.cartao + '</span>';
+      if (r.tipo) cHtml += '<span>·</span><span class="badge-tipo">' + r.tipo + '</span>';
+      cHtml += '</div></div>';
+    });
+    cardsWrap.innerHTML = cHtml;
+  }
 }
 
 // ══════════════════════════════════════════════════════════
