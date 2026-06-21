@@ -1721,23 +1721,18 @@ async function enviarLancamento() {
   btn.textContent = '⏳ Registrando...';
 
   try {
-    var resp = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: TOKEN,
-        acao:  'novoLancamento',
-        dados: {
-          valor:    valor,
-          descricao: desc,
-          conta:    conta,
-          direcao:  LANC_DIRECAO,
-          tipo:     LANC_TIPO,
-          manual:   manual
-        }
-      })
+    // Usa GET (mesmo mecanismo das outras chamadas — POST tem CORS no GAS)
+    var params = new URLSearchParams({
+      token:     TOKEN,
+      acao:      'novoLancamento',
+      valor:     valor,
+      descricao: desc,
+      conta:     conta,
+      direcao:   LANC_DIRECAO,
+      tipo:      LANC_TIPO,
+      manual:    manual ? 'true' : 'false'
     });
-
+    var resp = await fetch(GAS_URL + '?' + params.toString());
     var resultado = JSON.parse(await resp.text());
 
     if (resultado.erro) throw new Error(resultado.erro);
