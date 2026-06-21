@@ -586,13 +586,27 @@ window.onload = function() {
 function onLogin(r) {
   const p = JSON.parse(atob(r.credential.split('.')[1]));
   TOKEN = r.credential;
-  localStorage.setItem('pf_token', TOKEN);
-  localStorage.setItem('pf_nome',  p.name    || p.email);
-  localStorage.setItem('pf_foto',  p.picture || '');
+  localStorage.setItem('pf_token',  TOKEN);
+  localStorage.setItem('pf_nome',   p.name    || p.email);
+  localStorage.setItem('pf_foto',   p.picture || '');
+  localStorage.setItem('pf_exp',    p.exp || 0);  // salva expiração
   mostrarApp(p.name || p.email, p.picture || '');
 }
 
 function mostrarApp(nome, foto) {
+  // Verifica se o token salvo ainda é válido (expira em 1h)
+  var exp = parseInt(localStorage.getItem('pf_exp') || '0');
+  var agora = Math.floor(Date.now() / 1000);
+  if (exp && agora >= exp - 60) {
+    // Token expirado ou expirando em 60s — limpa e pede novo login
+    localStorage.removeItem('pf_token');
+    localStorage.removeItem('pf_exp');
+    TOKEN = null;
+    google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
+    google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
+    google.accounts.id.prompt(); // tenta renovar silenciosamente
+    return;
+  }
   document.getElementById('tela-login').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('usr-nome').textContent = nome || '';
@@ -714,10 +728,19 @@ async function chamarGAS(acao) {
   const text = await resp.text();
   const dados = JSON.parse(text);
   if (dados.erro) {
-    // Só volta ao login em erros de autenticação
     if (dados.erro.includes('Token') || dados.erro.includes('Acesso negado')) {
+      // Token expirado: limpa e volta ao login sem recarregar
       localStorage.removeItem('pf_token');
-      location.reload();
+      localStorage.removeItem('pf_exp');
+      TOKEN = null;
+      overlayHide();
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('tela-login').style.display = 'flex';
+      document.getElementById('erro-login').textContent = 'Sessão expirada. Faça login novamente.';
+      google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
+      google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
+      google.accounts.id.prompt();
+      throw new Error(dados.erro); // interrompe o Promise.all
     }
     throw new Error(dados.erro);
   }
