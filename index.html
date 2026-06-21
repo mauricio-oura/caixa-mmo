@@ -194,6 +194,10 @@
     /* ── GRÁFICO ── */
     .chart-container { position: relative; height: 220px; width: 100%; }
     #card-grafico.oculto { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; min-height: 0 !important; }
+    /* Modo extrato: remove espaço do tab-content e conteudo-principal */
+    #app.modo-extrato .conteudo-principal { padding-top: 0 !important; }
+    #app.modo-extrato .tab-content { margin-top: 0 !important; }
+    #app.modo-extrato .tab-pane:not(.active) { display: none !important; height: 0 !important; overflow: hidden !important; }
     @media (max-width: 640px) { .chart-container { height: 180px; } }
 
     /* ── TABELAS DESKTOP ── */
@@ -1010,6 +1014,7 @@ function alternarAba(aba) {
 
   if (aba === 'resumo') {
     document.getElementById('filtros-topo').style.display = '';
+    document.getElementById('app').classList.remove('modo-extrato');
     document.getElementById('grupo-historico').classList.add('d-none');
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
@@ -1026,11 +1031,13 @@ function alternarAba(aba) {
     var _gc = document.getElementById('card-grafico'); if(_gc){ _gc.classList.add('oculto'); }
     // Oculta a barra de filtros global (extrato tem filtros próprios embutidos)
     document.getElementById('filtros-topo').style.display = 'none';
+    document.getElementById('app').classList.add('modo-extrato');
     setTimeout(ajustarAlturas, 50);
     var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
     if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
   } else {
     document.getElementById('filtros-topo').style.display = '';
+    document.getElementById('app').classList.remove('modo-extrato');
     document.getElementById('grupo-historico').classList.remove('d-none');
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
