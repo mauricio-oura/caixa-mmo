@@ -273,13 +273,19 @@
     .btn-historico { font-size:0.75rem; padding:4px 10px; white-space:nowrap; }
 
     /* Tabela extrato desktop */
-    .ext-table-wrap { max-height:55vh; overflow:auto; border:1px solid #e2e8f0; border-radius:8px; }
-    .ext-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
-    .ext-table thead th { position:sticky; top:0; z-index:2; background:#1e293b; color:white; padding:9px 12px; text-align:left; white-space:nowrap; }
+    .ext-table-wrap { max-height:55vh; overflow-y:auto; overflow-x:hidden; border:1px solid #e2e8f0; border-radius:8px; }
+    .ext-table { width:100%; border-collapse:collapse; font-size:0.83rem; table-layout:fixed; }
+    .ext-table thead th { position:sticky; top:0; z-index:2; background:#1e293b; color:white; padding:9px 12px; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .ext-table tbody tr { border-bottom:1px solid #f1f5f9; transition:background 0.1s; }
     .ext-table tbody tr:hover { background:#f8fafc; }
-    .ext-table td { padding:7px 12px; vertical-align:middle; }
+    .ext-table td { padding:7px 12px; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .ext-table tfoot td { position:sticky; bottom:0; background:#f1f5f9; font-weight:700; padding:8px 12px; border-top:2px solid #94a3b8; }
+    /* Larguras das colunas — cabe sem scroll horizontal */
+    .ext-table .col-data  { width:90px; }
+    .ext-table .col-conta { width:18%; }
+    .ext-table .col-desc  { width:auto; }
+    .ext-table .col-tipo  { width:100px; }
+    .ext-table .col-valor { width:110px; text-align:right; }
     .badge-tipo { font-size:0.68rem; padding:2px 7px; border-radius:999px; background:#f1f5f9; color:#475569; font-weight:600; }
     .ext-valor-pos { color:#15803d; font-weight:700; }
     .ext-valor-neg { color:#dc2626; font-weight:700; }
@@ -422,8 +428,8 @@
       <li class="nav-item"><button class="nav-link nav-link-sm active" id="tab-lancamentos" data-bs-toggle="pill" data-bs-target="#painel-lancamentos" onclick="alternarAba('lancamentos')">Gerais</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-cartao" data-bs-toggle="pill" data-bs-target="#painel-cartao" onclick="alternarAba('cartao')">Cartão</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" onclick="alternarAba('resumo')">🎯 Planejado</button></li>
-      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-bkp" data-bs-toggle="pill" data-bs-target="#painel-ext-bkp" onclick="alternarAba('ext-bkp')">📋 Desp. Gerais</button></li>
-      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-cartao" data-bs-toggle="pill" data-bs-target="#painel-ext-cartao" onclick="alternarAba('ext-cartao')">💳 Desp. Cartão</button></li>
+      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-bkp" data-bs-toggle="pill" data-bs-target="#painel-ext-bkp" onclick="alternarAba('ext-bkp')">📋 Extrato Gerais</button></li>
+      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-cartao" data-bs-toggle="pill" data-bs-target="#painel-ext-cartao" onclick="alternarAba('ext-cartao')">💳 Extrato Cartão</button></li>
     </ul>
   </div>
 
@@ -544,12 +550,9 @@
           <div id="ct-ext-bkp" class="d-none">
             <div class="ext-table-wrap tabela-desktop">
               <table class="ext-table">
+                <colgroup><col class="col-data"><col class="col-conta"><col class="col-desc"><col class="col-tipo"><col class="col-valor"></colgroup>
                 <thead><tr>
-                  <th style="width:90px;">Data</th>
-                  <th style="width:130px;">Conta</th>
-                  <th>Descrição</th>
-                  <th style="width:110px;">Tipo</th>
-                  <th style="width:110px;" class="text-end">Valor</th>
+                  <th>Data</th><th>Conta</th><th>Descrição</th><th>Tipo</th><th class="text-end">Valor</th>
                 </tr></thead>
                 <tbody id="body-ext-bkp"></tbody>
                 <tfoot><tr><td colspan="4" id="foot-ext-bkp-label">TOTAL</td><td class="text-end" id="foot-ext-bkp-val"></td></tr></tfoot>
@@ -579,12 +582,9 @@
           <div id="ct-ext-cartao" class="d-none">
             <div class="ext-table-wrap tabela-desktop">
               <table class="ext-table">
+                <colgroup><col class="col-data"><col class="col-conta"><col class="col-desc"><col class="col-tipo"><col class="col-valor"></colgroup>
                 <thead><tr>
-                  <th style="width:90px;">Fatura</th>
-                  <th style="width:130px;">Cartão</th>
-                  <th>Descrição</th>
-                  <th style="width:110px;">Tipo</th>
-                  <th style="width:110px;" class="text-end">Valor</th>
+                  <th>Fatura</th><th>Cartão</th><th>Descrição</th><th>Tipo</th><th class="text-end">Valor</th>
                 </tr></thead>
                 <tbody id="body-ext-cartao"></tbody>
                 <tfoot><tr><td colspan="4" id="foot-ext-cartao-label">TOTAL</td><td class="text-end" id="foot-ext-cartao-val"></td></tr></tfoot>
@@ -611,7 +611,7 @@
         <span class="icon">🎯</span><span class="bnav-label">Planejado</span>
       </button>
       <button class="bnav-btn" id="bnav-ext-bkp" onclick="alternarAba('ext-bkp')">
-        <span class="icon">📋</span><span class="bnav-label">Gerais</span>
+        <span class="icon">📋</span><span class="bnav-label">Ext.Gerais</span>
       </button>
       <button class="bnav-btn" id="bnav-ext-cartao" onclick="alternarAba('ext-cartao')">
         <span class="icon">💳</span><span class="bnav-label">Cartão</span>
@@ -987,7 +987,7 @@ function aplicarFiltros() {
 function alternarAba(aba) {
   ABA = aba;
   // Título dinâmico
-  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro', 'ext-bkp':'📋 Desp. Gerais — Painel Financeiro', 'ext-cartao':'💳 Desp. Cartão — Painel Financeiro'};
+  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro', 'ext-bkp':'📋 Extrato Gerais — Painel Financeiro', 'ext-cartao':'💳 Extrato Cartão — Painel Financeiro'};
   document.title = titulos[aba] || 'Painel Financeiro';
   // Header cor
   var hdr = document.getElementById('app-header');
@@ -1010,6 +1010,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
     document.getElementById('col-grafico-pizza').classList.remove('d-none');
+    document.getElementById('titulo-grafico').closest('.container-card').style.display = '';
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
@@ -1018,7 +1019,8 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    document.getElementById('titulo-grafico').textContent = aba === 'ext-bkp' ? 'DESPESAS GERAIS (BKP)' : 'DESPESAS CARTÃO';
+    // Oculta gráfico nas abas de extrato
+    document.getElementById('titulo-grafico').closest('.container-card').style.display = 'none';
     setTimeout(ajustarAlturas, 50);
     var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
     if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
@@ -1027,6 +1029,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
+    document.getElementById('titulo-grafico').closest('.container-card').style.display = '';
     document.getElementById('titulo-grafico').textContent = 'EVOLUÇÃO DOS SUBTOTAIS';
     setTimeout(ajustarAlturas, 50);
     var dados = aba==='lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
@@ -1310,7 +1313,8 @@ function renderChipsExt(containerId, valores, cls, cb) {
   wrap.innerHTML = '';
   valores.forEach(function(v) {
     var c = document.createElement('span');
-    c.className = 'chip ' + cls; c.textContent = v; c.dataset.valor = v;
+    // Chips inativos por padrão — ativar para filtrar
+    c.className = 'chip'; c.textContent = v; c.dataset.valor = v;
     c.addEventListener('click', function(){ c.classList.toggle(cls); cb(); });
     wrap.appendChild(c);
   });
@@ -1330,9 +1334,12 @@ function filtrarExt(tipo) {
     var contasFilt = chipsAtivosExt('chips-bkp-conta',  'ativo-azul');
     var tiposFilt  = chipsAtivosExt('chips-bkp-tipo',   'ativo-roxo');
     filtrado = dados.filter(function(r) {
+      // Sem chip ativo = sem filtro por essa dimensão (mostra tudo)
       if (contasFilt.length && !contasFilt.includes(r.conta)) return false;
       if (tiposFilt.length  && !tiposFilt.includes(r.tipo))   return false;
-      if (busca && !r.descricao.toLowerCase().includes(busca) && !r.conta.toLowerCase().includes(busca) && !r.tipo.toLowerCase().includes(busca)) return false;
+      if (busca && !r.descricao.toLowerCase().includes(busca) &&
+          !(r.conta||'').toLowerCase().includes(busca) &&
+          !(r.tipo||'').toLowerCase().includes(busca)) return false;
       return true;
     });
     EXT_BKP_FILTRADO = filtrado;
@@ -1342,7 +1349,9 @@ function filtrarExt(tipo) {
     filtrado = dados.filter(function(r) {
       if (cartoesFilt.length && !cartoesFilt.includes(r.cartao)) return false;
       if (tiposCFilt.length  && !tiposCFilt.includes(r.tipo))    return false;
-      if (busca && !r.descricao.toLowerCase().includes(busca) && !(r.cartao||'').toLowerCase().includes(busca) && !(r.tipo||'').toLowerCase().includes(busca)) return false;
+      if (busca && !r.descricao.toLowerCase().includes(busca) &&
+          !(r.cartao||'').toLowerCase().includes(busca) &&
+          !(r.tipo||'').toLowerCase().includes(busca)) return false;
       return true;
     });
     EXT_CARTAO_FILTRADO = filtrado;
