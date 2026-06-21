@@ -216,7 +216,9 @@
     .linha-detalhe td { padding: 0 !important; border: none !important; }
     .slider-conteudo { overflow: hidden; max-height: 0; transition: max-height 0.28s ease; }
     .tabela-filha { width: 100% !important; table-layout: fixed !important; border-collapse: collapse; background: #f8fafc; }
-    .tabela-filha td { font-size: 0.78rem; padding: 6px 12px !important; border-bottom: 1px dotted #e2e8f0 !important; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tabela-filha td { font-size: 0.78rem; padding: 6px 12px !important; border-bottom: 1px dotted #e2e8f0 !important; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
+    /* Coluna de descrição na gaveta de detalhes — texto completo */
+    .tabela-filha td:first-child { white-space: normal !important; overflow: visible !important; text-overflow: unset !important; word-break: break-word; line-height: 1.5; }
     .tabela-filha tr td:first-child { width: 200px !important; min-width: 200px !important; max-width: 200px !important; padding-left: 20px !important; }
     tr.linha-mes-atual > td { background: #fffbeb !important; }
     tr.linha-mes-atual > td:first-child::before { content: '▶ '; font-size: 0.55rem; color: var(--cor-warning); vertical-align: middle; }
@@ -284,7 +286,7 @@
     .ext-table tbody tr { border-bottom:1px solid #f1f5f9; transition:background 0.1s; }
     .ext-table tbody tr:hover { background:#f8fafc; }
     .ext-table td { padding:7px 12px; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .ext-table td.col-desc { white-space:normal; overflow:visible; text-overflow:unset; word-break:break-word; line-height:1.4; }
+    .ext-table td.col-desc { white-space:normal !important; overflow:visible !important; text-overflow:unset !important; word-break:break-word; line-height:1.4; }
     .ext-table tfoot td { position:sticky; bottom:0; background:#f1f5f9; font-weight:700; padding:8px 12px; border-top:2px solid #94a3b8; }
     /* Larguras das colunas — cabe sem scroll horizontal */
     .ext-table .col-data  { width:96px; min-width:96px; }
@@ -301,7 +303,7 @@
     /* Cards mobile extrato */
     .ext-card { background:white; border-radius:10px; border:1px solid #e2e8f0; padding:11px 14px; margin-bottom:7px; }
     .ext-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px; }
-    .ext-card-desc { font-weight:600; font-size:0.85rem; color:#1e293b; flex:1; }
+    .ext-card-desc { font-weight:600; font-size:0.85rem; color:#1e293b; flex:1; word-break:break-word; }
     .ext-card-val { font-weight:700; font-size:0.9rem; white-space:nowrap; }
     .ext-card-meta { font-size:0.72rem; color:#94a3b8; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
     /* ── EXTRATO ── */
