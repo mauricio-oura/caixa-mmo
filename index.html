@@ -642,11 +642,25 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 // ══════════════════════════════════════════════════════════
-// CONFIGURAÇÃO
+// CONFIGURAÇÃO — carregada dinamicamente por cliente
+// ?c=nome  → carrega clientes/nome.json
+// sem ?c   → usa configuração padrão (uso pessoal do Mauricio)
 // ══════════════════════════════════════════════════════════
-const CLIENT_ID = "734876058552-q7gm3h2dq5idlmq9k7cqapm2e2bvtj8c.apps.googleusercontent.com";
-const GAS_URL   = "https://script.google.com/macros/s/AKfycbwen5C12CZoH66w8S1cYAy9rBNKGE9pBVc3tZtnq5unEwy6Kt6LVNHEOatGzIDrXemg/exec";
+const CONFIG_PADRAO = {
+  clientId: "734876058552-q7gm3h2dq5idlmq9k7cqapm2e2bvtj8c.apps.googleusercontent.com",
+  gasUrl:   "https://script.google.com/macros/s/AKfycbwen5C12CZoH66w8S1cYAy9rBNKGE9pBVc3tZtnq5unEwy6Kt6LVNHEOatGzIDrXemg/exec",
+  nome:     "Painel Financeiro"
+};
+
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas em ms
+
+// Configuração ativa — preenchida no carregamento
+let CLIENT_ID = CONFIG_PADRAO.clientId;
+let GAS_URL   = CONFIG_PADRAO.gasUrl;
+let NOME_APP  = CONFIG_PADRAO.nome;
+
+// Chave do cliente — usada como prefixo no localStorage para isolar caches
+let CLIENTE_KEY = 'padrao';
 
 // ══════════════════════════════════════════════════════════
 // ESTADO
@@ -663,26 +677,60 @@ let ABA_RENDERIZADA = {};
 // AUTENTICAÇÃO
 // ══════════════════════════════════════════════════════════
 window.onload = function() {
-  // Inicializa GSI uma única vez sempre
+  var params = new URLSearchParams(window.location.search);
+  var clienteParam = params.get('c');
+
+  if (clienteParam) {
+    // Carrega config do cliente a partir do JSON no repositório
+    CLIENTE_KEY = clienteParam;
+    fetch('clientes/' + clienteParam + '.json?v=' + Date.now())
+      .then(function(r) {
+        if (!r.ok) throw new Error('Cliente não encontrado: ' + clienteParam);
+        return r.json();
+      })
+      .then(function(cfg) {
+        CLIENT_ID = cfg.clientId;
+        GAS_URL   = cfg.gasUrl;
+        NOME_APP  = cfg.nome || 'Painel Financeiro';
+        document.title = NOME_APP;
+        document.querySelector('.header-titulo span:last-child').textContent = NOME_APP;
+        iniciarGSI();
+      })
+      .catch(function(err) {
+        document.getElementById('erro-login').textContent = '⚠️ ' + err.message;
+        document.getElementById('erro-login').style.display = 'block';
+      });
+  } else {
+    // Sem parâmetro — usa configuração padrão (Mauricio)
+    CLIENTE_KEY = 'padrao';
+    iniciarGSI();
+  }
+};
+
+function iniciarGSI() {
+  // Inicializa GSI uma única vez com o CLIENT_ID da config carregada
   google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
   google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
 
-  const t = localStorage.getItem('pf_token');
+  // Prefixo do localStorage por cliente para isolar tokens e caches
+  var prefixo = 'pf_' + CLIENTE_KEY + '_';
+  var t = localStorage.getItem(prefixo + 'token');
   if (t) {
     TOKEN = t;
-    mostrarApp(localStorage.getItem('pf_nome'), localStorage.getItem('pf_foto'));
+    mostrarApp(localStorage.getItem(prefixo + 'nome'), localStorage.getItem(prefixo + 'foto'));
   } else {
-    localStorage.removeItem('pf_nome');
-    localStorage.removeItem('pf_foto');
+    localStorage.removeItem(prefixo + 'nome');
+    localStorage.removeItem(prefixo + 'foto');
   }
-};
+}
 
 function onLogin(r) {
   const p = JSON.parse(atob(r.credential.split('.')[1]));
   TOKEN = r.credential;
-  localStorage.setItem('pf_token', TOKEN);
-  localStorage.setItem('pf_nome',  p.name    || p.email);
-  localStorage.setItem('pf_foto',  p.picture || '');
+  var prefixo = 'pf_' + CLIENTE_KEY + '_';
+  localStorage.setItem(prefixo + 'token', TOKEN);
+  localStorage.setItem(prefixo + 'nome',  p.name    || p.email);
+  localStorage.setItem(prefixo + 'foto',  p.picture || '');
   mostrarApp(p.name || p.email, p.picture || '');
 }
 
@@ -697,7 +745,11 @@ function mostrarApp(nome, foto) {
 }
 
 function sair() {
-  localStorage.clear();
+  // Remove apenas as chaves deste cliente, não de outros
+  var prefixo = 'pf_' + CLIENTE_KEY + '_';
+  Object.keys(localStorage)
+    .filter(function(k){ return k.startsWith(prefixo); })
+    .forEach(function(k){ localStorage.removeItem(k); });
   google.accounts.id.disableAutoSelect();
   location.reload();
 }
@@ -726,7 +778,8 @@ function forcarAtualizacao() {
   btn.classList.add('girando');
   btn.disabled = true;
   // Limpa só o cache de dados, mantém token e preferências
-  ['lancamentos','cartao','resumo','dv','ext-bkp','ext-cartao'].forEach(function(k){ localStorage.removeItem('pf_cache_'+k); });
+  var prefixoCache = 'pf_' + CLIENTE_KEY + '_cache_';
+  Object.keys(localStorage).filter(function(k){ return k.startsWith(prefixoCache); }).forEach(function(k){ localStorage.removeItem(k); });
   ABA_RENDERIZADA = {};
   // Reseta skeletons
   ['lancamentos','cartao','resumo'].forEach(function(id){
@@ -745,7 +798,7 @@ function forcarAtualizacao() {
 // INDICADOR DE CACHE (quando foi a última atualização)
 // ══════════════════════════════════════════════════════════
 function atualizarCacheInfo() {
-  var raw = localStorage.getItem('pf_cache_lancamentos');
+  var raw = localStorage.getItem('pf_' + CLIENTE_KEY + '_cache_lancamentos');
   var el  = document.getElementById('cache-info');
   if (!raw || !el) return;
   try {
@@ -787,14 +840,18 @@ function atualizarCacheInfo() {
 // CACHE localStorage
 // ══════════════════════════════════════════════════════════
 function cacheSet(key, data) {
-  try { localStorage.setItem('pf_cache_' + key, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+  try {
+    var k = 'pf_' + CLIENTE_KEY + '_cache_' + key;
+    localStorage.setItem(k, JSON.stringify({ ts: Date.now(), data: data }));
+  } catch(e) {}
 }
 function cacheGet(key) {
   try {
-    var raw = localStorage.getItem('pf_cache_' + key);
+    var k = 'pf_' + CLIENTE_KEY + '_cache_' + key;
+    var raw = localStorage.getItem(k);
     if (!raw) return null;
     var obj = JSON.parse(raw);
-    if (Date.now() - obj.ts > CACHE_TTL) { localStorage.removeItem('pf_cache_' + key); return null; }
+    if (Date.now() - obj.ts > CACHE_TTL) { localStorage.removeItem(k); return null; }
     return obj.data;
   } catch(e) { return null; }
 }
@@ -813,7 +870,10 @@ async function chamarGAS(acao) {
 
 // Chamado uma única vez quando o token expira
 function voltarAoLogin(msg) {
-  localStorage.clear();
+  var prefixo = 'pf_' + CLIENTE_KEY + '_';
+  Object.keys(localStorage)
+    .filter(function(k){ return k.startsWith(prefixo); })
+    .forEach(function(k){ localStorage.removeItem(k); });
   TOKEN = null;
   overlayHide();
   document.getElementById('app').style.display = 'none';
