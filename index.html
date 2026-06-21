@@ -44,7 +44,6 @@
     .app-header.aba-lancamentos { border-bottom-color: var(--cor-azul); }
     .app-header.aba-cartao      { border-bottom-color: var(--cor-verde); }
     .app-header.aba-resumo      { border-bottom-color: var(--cor-roxo); }
-    .app-header.aba-extrato     { border-bottom-color: #ea580c; }
     .header-titulo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem; color: #0f172a; }
     .header-titulo .dot {
       width: 8px; height: 8px; border-radius: 50%; background: var(--cor-azul);
@@ -136,7 +135,6 @@
     .nav-pills .nav-link.active { background: var(--cor-azul); }
     #tab-cartao.active { background: var(--cor-verde); }
     #tab-resumo.active  { background: var(--cor-roxo); }
-    #tab-extrato.active { background: #ea580c; }
     /* Esconde abas desktop em portrait mobile; mostra em landscape (bottom nav some) */
     @media (max-width: 640px) and (orientation: portrait) { .abas-fixas { display: none; } }
 
@@ -159,7 +157,6 @@
     .bnav-btn.ativo { color: var(--cor-azul); border-top-color: var(--cor-azul); }
     .bnav-btn.ativo.verde { color: var(--cor-verde); border-top-color: var(--cor-verde); }
     .bnav-btn.ativo.roxo  { color: var(--cor-roxo);  border-top-color: var(--cor-roxo);  }
-    .bnav-btn.ativo.laranja { color: #ea580c; border-top-color: #ea580c; }
     /* Portrait mobile: bottom nav visível */
     @media (max-width: 640px) and (orientation: portrait) {
       .bottom-nav { display: block; }
@@ -258,24 +255,7 @@
 
     /* ── MÉTRICAS RESUMO ── */
     .card-metrica { border-radius: 10px; padding: 14px; border-left: 4px solid #e2e8f0; background: white; }
-    /* ── EXTRATO ── */
-    .badge-origem-bkp    { background:#e0f2fe; color:#0369a1; }
-    .badge-origem-lanc   { background:#dcfce7; color:#15803d; }
-    .badge-origem-saldo  { background:#fef9c3; color:#854d0e; }
-    .badge-origem-cartao { background:#ede9fe; color:#5b21b6; }
-    .extrato-filtros { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-    .extrato-busca { flex:1; min-width:180px; font-size:0.82rem; padding:5px 10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; }
-    .extrato-busca:focus { border-color:var(--cor-azul); }
-    .extrato-total { font-size:0.78rem; color:#94a3b8; white-space:nowrap; }
-    /* Card mobile extrato */
-    .card-ext {
-      background:white; border-radius:10px; border:1px solid #e2e8f0;
-      padding:11px 14px; margin-bottom:8px; display:flex; flex-direction:column; gap:4px;
-    }
-    .card-ext-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
-    .card-ext-desc { font-weight:600; font-size:0.85rem; color:#1e293b; }
-    .card-ext-valor { font-weight:700; font-size:0.9rem; white-space:nowrap; }
-    .card-ext-meta { font-size:0.72rem; color:#94a3b8; display:flex; gap:8px; flex-wrap:wrap; }
+
     .card-metrica small { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; display: block; margin-bottom: 4px; }
     .card-metrica h5 { margin: 0; font-weight: 800; font-size: 1.1rem; }
     .progresso-wrap { display: flex; align-items: center; gap: 6px; min-width: 140px; }
@@ -390,7 +370,6 @@
       <li class="nav-item"><button class="nav-link nav-link-sm active" id="tab-lancamentos" data-bs-toggle="pill" data-bs-target="#painel-lancamentos" onclick="alternarAba('lancamentos')">Gerais</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-cartao" data-bs-toggle="pill" data-bs-target="#painel-cartao" onclick="alternarAba('cartao')">Cartão</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" onclick="alternarAba('resumo')">🎯 Planejado</button></li>
-      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-extrato" data-bs-toggle="pill" data-bs-target="#painel-extrato" onclick="alternarAba('extrato')">📜 Extrato</button></li>
     </ul>
   </div>
 
@@ -490,43 +469,6 @@
         </div>
       </div>
 
-      <!-- ABA EXTRATO -->
-      <div class="tab-pane fade" id="painel-extrato">
-        <div class="container-card">
-          <div class="extrato-filtros">
-            <input class="extrato-busca" id="extrato-busca" type="text" placeholder="🔍 Buscar descrição, categoria..." oninput="filtrarExtrato()">
-            <div class="chips-wrap" id="chips-extrato-origem"></div>
-            <span class="extrato-total" id="extrato-total"></span>
-          </div>
-          <div id="sk-extrato">
-            <div class="skeleton sk-titulo"></div>
-            <div class="skeleton sk-linha" style="width:100%"></div>
-            <div class="skeleton sk-linha" style="width:90%"></div>
-            <div class="skeleton sk-linha" style="width:95%"></div>
-            <div class="skeleton sk-linha" style="width:80%"></div>
-          </div>
-          <!-- Tabela desktop -->
-          <div id="container-extrato" class="table-responsive d-none tabela-desktop">
-            <table class="table table-sm table-hover align-middle m-0" style="width:100%;">
-              <thead>
-                <tr>
-                  <th style="background:#1e293b;color:white;width:100px;">Data</th>
-                  <th style="background:#1e293b;color:white;width:90px;">Origem</th>
-                  <th style="background:#1e293b;color:white;">Categoria</th>
-                  <th style="background:#1e293b;color:white;">Descrição</th>
-                  <th style="background:#1e293b;color:white;width:80px;">Tipo</th>
-                  <th style="background:#1e293b;color:white;width:120px;" class="text-end">Valor</th>
-                </tr>
-              </thead>
-              <tbody id="body-extrato"></tbody>
-              <tfoot id="footer-extrato"></tfoot>
-            </table>
-          </div>
-          <!-- Cards mobile -->
-          <div class="cards-mobile" id="cards-extrato"></div>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -541,9 +483,6 @@
       </button>
       <button class="bnav-btn" id="bnav-resumo" onclick="alternarAba('resumo')">
         <span class="icon">🎯</span><span class="bnav-label">Planejado</span>
-      </button>
-      <button class="bnav-btn" id="bnav-extrato" onclick="alternarAba('extrato')">
-        <span class="icon">📜</span><span class="bnav-label">Extrato</span>
       </button>
     </div>
   </nav>
@@ -568,7 +507,6 @@ const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas em ms
 // ══════════════════════════════════════════════════════════
 let TOKEN = null;
 let DADOS_LANCAMENTOS = null, DADOS_CARTAO = null, DADOS_RESUMO = null;
-let DADOS_EXTRATO = null, EXTRATO_FILTRADO = null;
 let GRAFICO = null, PIZZA = null;
 let ABA = 'lancamentos';
 let ABA_RENDERIZADA = {};
@@ -752,9 +690,9 @@ async function chamarGAS(acao) {
 // ══════════════════════════════════════════════════════════
 async function carregarDados() {
   // Tenta servir do cache primeiro
-  var cL = cacheGet('lancamentos'), cC = cacheGet('cartao'), cR = cacheGet('resumo'), cD = cacheGet('dv'), cE = cacheGet('extrato');
-  if (cL && cC && cR && cD && cE) {
-    DADOS_LANCAMENTOS = cL; DADOS_CARTAO = cC; DADOS_RESUMO = cR; DADOS_EXTRATO = cE;
+  var cL = cacheGet('lancamentos'), cC = cacheGet('cartao'), cR = cacheGet('resumo'), cD = cacheGet('dv');
+  if (cL && cC && cR && cD) {
+    DADOS_LANCAMENTOS = cL; DADOS_CARTAO = cC; DADOS_RESUMO = cR;
     preencherDV(cD);
     iniciarUI();
     atualizarCacheInfo();
@@ -764,17 +702,15 @@ async function carregarDados() {
   // Sem cache: carrega em paralelo com indicador de progresso
   overlayShow('Carregando dados...');
   try {
-    const [lanc, cartao, resumo, dv, extrato] = await Promise.all([
+    const [lanc, cartao, resumo, dv] = await Promise.all([
       chamarGAS('getDadosLancamentos').then(function(d){ stepAtivo(1); return d; }),
       chamarGAS('getDadosCartaoC')    .then(function(d){ stepAtivo(2); return d; }),
       chamarGAS('getDadosResumo')     .then(function(d){ stepAtivo(3); return d; }),
-      chamarGAS('getDadosDV'),
-      chamarGAS('getDadosExtrato').catch(function(e){ console.warn('Extrato indisponível:', e.message); return []; })
+      chamarGAS('getDadosDV')
     ]);
-    DADOS_LANCAMENTOS = lanc; DADOS_CARTAO = cartao; DADOS_RESUMO = resumo; DADOS_EXTRATO = extrato;
+    DADOS_LANCAMENTOS = lanc; DADOS_CARTAO = cartao; DADOS_RESUMO = resumo;
     cacheSet('lancamentos', lanc); cacheSet('cartao', cartao);
     cacheSet('resumo', resumo);    cacheSet('dv', dv);
-    if (extrato && extrato.length) cacheSet('extrato', extrato);
     preencherDV(dv);
     overlayHide();
     iniciarUI();
@@ -929,15 +865,15 @@ function aplicarFiltros() {
 function alternarAba(aba) {
   ABA = aba;
   // Título dinâmico
-  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro', extrato:'📜 Extrato — Painel Financeiro'};
+  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro'};
   document.title = titulos[aba] || 'Painel Financeiro';
   // Header cor
   var hdr = document.getElementById('app-header');
   hdr.className = 'app-header aba-' + aba;
   // Bottom nav
   document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('ativo','verde','roxo'); });
-  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo',extrato:'bnav-extrato'};
-  var bnavClsMap = {cartao:'verde',resumo:'roxo',extrato:'laranja'};
+  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo'};
+  var bnavClsMap = {cartao:'verde',resumo:'roxo'};
   var btn = document.getElementById(bnavMap[aba]);
   if (btn) { btn.classList.add('ativo'); if(bnavClsMap[aba]) btn.classList.add(bnavClsMap[aba]); }
   // Tab pills desktop
@@ -955,14 +891,6 @@ function alternarAba(aba) {
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
-  } else if (aba === 'extrato') {
-    document.getElementById('grupo-historico').classList.add('d-none');
-    document.getElementById('grupo-resumo').classList.add('d-none');
-    document.getElementById('col-grafico-principal').className = 'col-12';
-    document.getElementById('col-grafico-pizza').classList.add('d-none');
-    document.getElementById('titulo-grafico').textContent = 'EXTRATO: TOTAL POR ORIGEM';
-    setTimeout(ajustarAlturas, 50);
-    if (!ABA_RENDERIZADA['extrato']) renderExtrato();
   } else {
     document.getElementById('grupo-historico').classList.remove('d-none');
     document.getElementById('grupo-resumo').classList.add('d-none');
@@ -1185,117 +1113,6 @@ function atualizarGrafico() {
   var ctx=document.getElementById('graficoSubtotais').getContext('2d');
   if(GRAFICO) GRAFICO.destroy();
   GRAFICO=new Chart(ctx,{type:'bar',data:{labels:meses.map(function(m){return m.mesAno;}),datasets:cats.map(function(c,i){return{label:c,data:meses.map(function(m){return m.valoresPorCategoria[c]||0;}),backgroundColor:cores[i%cores.length],borderRadius:4};})},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,ticks:{font:{size:10}}},y:{stacked:true,ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:10},boxWidth:10}}}}});
-}
-
-// ══════════════════════════════════════════════════════════
-// EXTRATO
-// ══════════════════════════════════════════════════════════
-var ORIGENS_LABELS = { bkp:'BKP', lanc:'Lançto', saldo:'Saldo', cartao:'Cartão' };
-var ORIGENS_ATIVAS = {};
-
-function renderExtrato() {
-  if (!DADOS_EXTRATO) return;
-  var sk = document.getElementById('sk-extrato'); if(sk) sk.style.display='none';
-
-  // chips de origem
-  var origens = {};
-  DADOS_EXTRATO.forEach(function(r){ origens[r.origem] = true; });
-  var origensList = Object.keys(origens).sort();
-  ORIGENS_ATIVAS = {};
-  origensList.forEach(function(o){ ORIGENS_ATIVAS[o] = true; });
-  var chipsWrap = document.getElementById('chips-extrato-origem');
-  chipsWrap.innerHTML = '';
-  origensList.forEach(function(o) {
-    var c = document.createElement('span');
-    c.className = 'chip ativo-azul'; c.textContent = ORIGENS_LABELS[o]||o; c.dataset.origem = o;
-    c.addEventListener('click', function(){
-      ORIGENS_ATIVAS[o] = !ORIGENS_ATIVAS[o];
-      c.classList.toggle('ativo-azul', ORIGENS_ATIVAS[o]);
-      filtrarExtrato();
-    });
-    chipsWrap.appendChild(c);
-  });
-
-  EXTRATO_FILTRADO = DADOS_EXTRATO.slice();
-  renderizarTabelaExtrato();
-  renderizarGraficoExtrato();
-  ABA_RENDERIZADA['extrato'] = true;
-}
-
-function filtrarExtrato() {
-  var busca = (document.getElementById('extrato-busca').value||'').toLowerCase();
-  EXTRATO_FILTRADO = DADOS_EXTRATO.filter(function(r) {
-    if (!ORIGENS_ATIVAS[r.origem]) return false;
-    if (busca && !r.descricao.toLowerCase().includes(busca) && !r.categoria.toLowerCase().includes(busca) && !r.tipo.toLowerCase().includes(busca)) return false;
-    return true;
-  });
-  renderizarTabelaExtrato();
-  renderizarGraficoExtrato();
-}
-
-function renderizarTabelaExtrato() {
-  var lista = EXTRATO_FILTRADO || [];
-  var total = 0; lista.forEach(function(r){ total += r.valor; });
-  var totalEl = document.getElementById('extrato-total');
-  if (totalEl) totalEl.textContent = lista.length + ' registro(s) · Total: ' + moeda(total);
-
-  // Desktop
-  var tbody = document.getElementById('body-extrato');
-  var tfoot = document.getElementById('footer-extrato');
-  var ct    = document.getElementById('container-extrato');
-  if (tbody) {
-    var html = '';
-    lista.forEach(function(r) {
-      var cls = 'badge-origem-' + r.origem;
-      var corVal = r.valor >= 0 ? 'text-success' : 'text-danger';
-      html += '<tr>';
-      html += '<td style="font-family:monospace;font-size:0.8rem;">' + r.data + '</td>';
-      html += '<td><span class="badge ' + cls + '" style="font-size:0.7rem;">' + (ORIGENS_LABELS[r.origem]||r.origem) + '</span></td>';
-      html += '<td style="font-size:0.82rem;">' + r.categoria + '</td>';
-      html += '<td style="font-size:0.82rem;max-width:280px;overflow:hidden;text-overflow:ellipsis;">' + r.descricao + '</td>';
-      html += '<td style="font-size:0.75rem;color:#94a3b8;">' + (r.tipo||'—') + '</td>';
-      html += '<td class="text-end fw-bold ' + corVal + '">' + moeda(r.valor) + '</td>';
-      html += '</tr>';
-    });
-    tbody.innerHTML = html;
-    tfoot.innerHTML = '<tr><td colspan="5" class="fw-bold">TOTAL</td><td class="text-end fw-bold ' + (total>=0?'text-success':'text-danger') + '">' + moeda(total) + '</td></tr>';
-    if (ct) ct.classList.remove('d-none');
-  }
-
-  // Mobile cards
-  var cardsWrap = document.getElementById('cards-extrato');
-  if (cardsWrap) {
-    var cHtml = '';
-    lista.forEach(function(r) {
-      var cls = 'badge-origem-' + r.origem;
-      var corVal = r.valor >= 0 ? 'text-success' : 'text-danger';
-      cHtml += '<div class="card-ext">';
-      cHtml += '<div class="card-ext-top">';
-      cHtml += '<span class="card-ext-desc">' + r.descricao + '</span>';
-      cHtml += '<span class="card-ext-valor ' + corVal + '">' + moeda(r.valor) + '</span>';
-      cHtml += '</div>';
-      cHtml += '<div class="card-ext-meta">';
-      cHtml += '<span>' + r.data + '</span>';
-      cHtml += '<span class="badge ' + cls + '" style="font-size:0.68rem;">' + (ORIGENS_LABELS[r.origem]||r.origem) + '</span>';
-      cHtml += '<span>' + r.categoria + '</span>';
-      if (r.tipo) cHtml += '<span style="color:#cbd5e1;">·</span><span>' + r.tipo + '</span>';
-      cHtml += '</div></div>';
-    });
-    cardsWrap.innerHTML = cHtml;
-  }
-}
-
-function renderizarGraficoExtrato() {
-  var totaisPorOrigem = {};
-  (EXTRATO_FILTRADO||[]).forEach(function(r){ totaisPorOrigem[ORIGENS_LABELS[r.origem]||r.origem] = (totaisPorOrigem[ORIGENS_LABELS[r.origem]||r.origem]||0) + Math.abs(r.valor); });
-  var cores = ['#0d6efd','#198754','#ea580c','#6f42c1','#f59e0b'];
-  var ctx = document.getElementById('graficoSubtotais').getContext('2d');
-  if (GRAFICO) GRAFICO.destroy();
-  GRAFICO = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels: Object.keys(totaisPorOrigem), datasets:[{ data: Object.values(totaisPorOrigem), backgroundColor: cores, borderWidth: 2 }]},
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'left',labels:{font:{size:11},boxWidth:12}}, title:{display:true,text:'Volume por Origem',font:{size:11}} }}
-  });
 }
 
 // ══════════════════════════════════════════════════════════
