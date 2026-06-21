@@ -535,12 +535,18 @@ let ABA_RENDERIZADA = {};
 // AUTENTICAÇÃO
 // ══════════════════════════════════════════════════════════
 window.onload = function() {
-  const t = localStorage.getItem('pf_token');
-  if (t) { TOKEN = t; mostrarApp(localStorage.getItem('pf_nome'), localStorage.getItem('pf_foto')); return; }
-  localStorage.removeItem('pf_nome');
-  localStorage.removeItem('pf_foto');
+  // Inicializa GSI uma única vez sempre
   google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
   google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
+
+  const t = localStorage.getItem('pf_token');
+  if (t) {
+    TOKEN = t;
+    mostrarApp(localStorage.getItem('pf_nome'), localStorage.getItem('pf_foto'));
+  } else {
+    localStorage.removeItem('pf_nome');
+    localStorage.removeItem('pf_foto');
+  }
 };
 
 function onLogin(r) {
@@ -685,8 +691,7 @@ function voltarAoLogin(msg) {
   document.getElementById('app').style.display = 'none';
   document.getElementById('tela-login').style.display = 'flex';
   document.getElementById('erro-login').textContent = msg || 'Sessão expirada. Faça login novamente.';
-  // Só inicializa o GSI uma vez
-  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
+  // GSI já foi inicializado no window.onload — apenas re-renderiza o botão
   google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
 }
 
