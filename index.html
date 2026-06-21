@@ -673,21 +673,21 @@ async function chamarGAS(acao) {
   const resp = await fetch(url);
   const text = await resp.text();
   const dados = JSON.parse(text);
-  if (dados.erro) {
-    if (dados.erro.includes('Token') || dados.erro.includes('Acesso negado')) {
-      localStorage.clear();
-      TOKEN = null;
-      overlayHide();
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('tela-login').style.display = 'flex';
-      document.getElementById('erro-login').textContent = 'Sessão expirada. Faça login novamente.';
-      google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
-      google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
-      throw new Error(dados.erro);
-    }
-    throw new Error(dados.erro);
-  }
+  if (dados.erro) throw new Error(dados.erro);
   return dados;
+}
+
+// Chamado uma única vez quando o token expira
+function voltarAoLogin(msg) {
+  localStorage.clear();
+  TOKEN = null;
+  overlayHide();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('erro-login').textContent = msg || 'Sessão expirada. Faça login novamente.';
+  // Só inicializa o GSI uma vez
+  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: true });
+  google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
 }
 
 // ══════════════════════════════════════════════════════════
