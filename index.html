@@ -1009,6 +1009,7 @@ function alternarAba(aba) {
   var pane = document.getElementById('painel-'+aba); if(pane) { pane.classList.add('show','active'); }
 
   if (aba === 'resumo') {
+    document.getElementById('filtros-topo').style.display = '';
     document.getElementById('grupo-historico').classList.add('d-none');
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
@@ -1023,10 +1024,13 @@ function alternarAba(aba) {
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
     var _gc = document.getElementById('card-grafico'); if(_gc){ _gc.classList.add('oculto'); }
+    // Oculta a barra de filtros global (extrato tem filtros próprios embutidos)
+    document.getElementById('filtros-topo').style.display = 'none';
     setTimeout(ajustarAlturas, 50);
     var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
     if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
   } else {
+    document.getElementById('filtros-topo').style.display = '';
     document.getElementById('grupo-historico').classList.remove('d-none');
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
