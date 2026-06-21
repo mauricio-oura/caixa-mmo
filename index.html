@@ -292,6 +292,7 @@
     .lancar-feedback { border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; font-weight: 500; display: none; margin-top: 12px; }
     .lancar-feedback.ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
     .lancar-feedback.erro  { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+    .lancar-feedback.info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; }
 
     /* ── EXTRATO ── */
     #tab-ext-bkp.active    { background: #0891b2; }
@@ -361,6 +362,7 @@
     .lancar-feedback { border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; font-weight: 500; display: none; margin-top: 12px; }
     .lancar-feedback.ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
     .lancar-feedback.erro  { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+    .lancar-feedback.info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; }
 
     /* ── EXTRATO ── */
     .badge-origem-bkp    { background:#e0f2fe; color:#0369a1; }
@@ -1710,6 +1712,13 @@ async function enviarLancamento() {
   document.getElementById('lanc-desc').classList.remove('is-invalid');
   document.getElementById('lanc-conta').classList.remove('is-invalid');
 
+  // Converte valor negativo para positivo automaticamente
+  if (valor < 0) {
+    valor = Math.abs(valor);
+    document.getElementById('lanc-valor').value = valor;
+    mostrarFeedback('ℹ️ Valor convertido para positivo. O sinal é definido pela direção (' + LANC_DIRECAO + ').', 'info');
+  }
+
   var erros = false;
   if (!valor || valor <= 0) { document.getElementById('lanc-valor').classList.add('is-invalid'); erros = true; }
   if (!desc)                { document.getElementById('lanc-desc').classList.add('is-invalid');  erros = true; }
@@ -1732,8 +1741,16 @@ async function enviarLancamento() {
       tipo:      LANC_TIPO,
       manual:    manual ? 'true' : 'false'
     });
-    var resp = await fetch(GAS_URL + '?' + params.toString());
-    var resultado = JSON.parse(await resp.text());
+
+    // Timeout de 45s — GAS pode demorar na primeira execução
+    var controller = new AbortController();
+    var timeoutId  = setTimeout(function(){ controller.abort(); }, 45000);
+    var resp = await fetch(GAS_URL + '?' + params.toString(), { signal: controller.signal });
+    clearTimeout(timeoutId);
+    var texto = await resp.text();
+    var resultado;
+    try { resultado = JSON.parse(texto); }
+    catch(e) { throw new Error('Resposta inválida do servidor. Verifique o deployment do GAS.'); }
 
     if (resultado.erro) throw new Error(resultado.erro);
 
@@ -1751,7 +1768,10 @@ async function enviarLancamento() {
     limparFormLancar();
 
   } catch(err) {
-    mostrarFeedback('❌ Erro: ' + err.message, 'erro');
+    var msgErro = err.name === 'AbortError'
+      ? '❌ Tempo esgotado. O GAS demorou mais de 45s. Verifique se o deployment está correto.'
+      : '❌ Erro: ' + err.message;
+    mostrarFeedback(msgErro, 'erro');
   } finally {
     btn.disabled    = false;
     btn.textContent = '➕ Registrar Lançamento';
