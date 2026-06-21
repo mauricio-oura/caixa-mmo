@@ -1013,8 +1013,16 @@ function voltarAoLogin(msg) {
   document.getElementById('app').style.display = 'none';
   document.getElementById('tela-login').style.display = 'flex';
   document.getElementById('erro-login').textContent = msg || 'Sessão expirada. Faça login novamente.';
-  // GSI já foi inicializado no window.onload — apenas re-renderiza o botão
-  google.accounts.id.renderButton(document.getElementById('g_id_signin'), { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 });
+  // Reinicializa o GSI do zero para garantir que o botão aparece
+  try {
+    google.accounts.id.cancel();
+    google.accounts.id.disableAutoSelect();
+  } catch(e) {}
+  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onLogin, auto_select: false });
+  google.accounts.id.renderButton(
+    document.getElementById('g_id_signin'),
+    { theme: 'outline', size: 'large', locale: 'pt-BR', width: 260 }
+  );
 }
 
 // ══════════════════════════════════════════════════════════
