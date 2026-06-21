@@ -1750,11 +1750,22 @@ async function enviarLancamento() {
       manual:    manual ? 'true' : 'false'
     });
 
-    // Timeout de 45s — GAS pode demorar na primeira execução
+    // Timeout de 90s — GAS pode demorar na primeira chamada do dia
     var controller = new AbortController();
-    var timeoutId  = setTimeout(function(){ controller.abort(); }, 45000);
+    var timeoutId  = setTimeout(function(){ controller.abort(); }, 90000);
+
+    // Mensagem progressiva para o usuário não achar que travou
+    var msgTimer1 = setTimeout(function(){
+      document.getElementById('btn-lancar').textContent = '⏳ Aguarde, conectando ao servidor...';
+    }, 5000);
+    var msgTimer2 = setTimeout(function(){
+      document.getElementById('btn-lancar').textContent = '⏳ Processando... (pode levar até 90s)';
+    }, 20000);
+
     var resp = await fetch(GAS_URL + '?' + params.toString(), { signal: controller.signal });
     clearTimeout(timeoutId);
+    clearTimeout(msgTimer1);
+    clearTimeout(msgTimer2);
     var texto = await resp.text();
     var resultado;
     try { resultado = JSON.parse(texto); }
@@ -1777,9 +1788,10 @@ async function enviarLancamento() {
 
   } catch(err) {
     var msgErro = err.name === 'AbortError'
-      ? '❌ Tempo esgotado. O GAS demorou mais de 45s. Verifique se o deployment está correto.'
+      ? '⚠️ O servidor demorou mais de 90s. Se for a primeira vez hoje, o lançamento pode ter sido registrado mesmo assim — verifique a aba Gerais antes de tentar novamente.'
       : '❌ Erro: ' + err.message;
-    mostrarFeedback(msgErro, 'erro');
+    var tipoMsg = err.name === 'AbortError' ? 'info' : 'erro';
+    mostrarFeedback(msgErro, typeof tipoMsg !== 'undefined' ? tipoMsg : 'erro');
   } finally {
     btn.disabled    = false;
     btn.textContent = '➕ Registrar Lançamento';
