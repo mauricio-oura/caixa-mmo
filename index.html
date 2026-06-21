@@ -365,6 +365,8 @@
       <div class="overlay-step" id="step-1"></div>
       <div class="overlay-step" id="step-2"></div>
       <div class="overlay-step" id="step-3"></div>
+      <div class="overlay-step" id="step-4"></div>
+      <div class="overlay-step" id="step-5"></div>
     </div>
   </div>
 </div>
@@ -824,8 +826,10 @@ function voltarAoLogin(msg) {
 async function carregarDados() {
   // Tenta servir do cache primeiro
   var cL = cacheGet('lancamentos'), cC = cacheGet('cartao'), cR = cacheGet('resumo'), cD = cacheGet('dv');
-  if (cL && cC && cR && cD) {
+  var cEB = cacheGet('ext-bkp'), cEC = cacheGet('ext-cartao');
+  if (cL && cC && cR && cD && cEB && cEC) {
     DADOS_LANCAMENTOS = cL; DADOS_CARTAO = cC; DADOS_RESUMO = cR;
+    EXT_BKP = cEB; EXT_CARTAO = cEC;
     preencherDV(cD);
     iniciarUI();
     atualizarCacheInfo();
@@ -835,15 +839,19 @@ async function carregarDados() {
   // Sem cache: carrega em paralelo com indicador de progresso
   overlayShow('Carregando dados...');
   try {
-    const [lanc, cartao, resumo, dv] = await Promise.all([
+    const [lanc, cartao, resumo, dv, extBkp, extCartao] = await Promise.all([
       chamarGAS('getDadosLancamentos').then(function(d){ stepAtivo(1); return d; }),
       chamarGAS('getDadosCartaoC')    .then(function(d){ stepAtivo(2); return d; }),
       chamarGAS('getDadosResumo')     .then(function(d){ stepAtivo(3); return d; }),
-      chamarGAS('getDadosDV')
+      chamarGAS('getDadosDV'),
+      chamarGAS('getDeltaBkp'),
+      chamarGAS('getDeltaCartao')
     ]);
     DADOS_LANCAMENTOS = lanc; DADOS_CARTAO = cartao; DADOS_RESUMO = resumo;
+    EXT_BKP = extBkp; EXT_CARTAO = extCartao;
     cacheSet('lancamentos', lanc); cacheSet('cartao', cartao);
     cacheSet('resumo', resumo);    cacheSet('dv', dv);
+    cacheSet('ext-bkp', extBkp);  cacheSet('ext-cartao', extCartao);
     preencherDV(dv);
     overlayHide();
     iniciarUI();
@@ -1268,11 +1276,10 @@ function atualizarGrafico() {
 // EXTRATO BKP + CARTÃO
 // ══════════════════════════════════════════════════════════
 function iniciarExtrato(tipo) {
-  // Tenta servir do cache primeiro (igual às abas principais)
-  var cached = cacheGet('ext-' + tipo);
-  if (cached) {
-    if (tipo === 'bkp') EXT_BKP = cached;
-    else EXT_CARTAO = cached;
+  var dadosEmMemoria = tipo === 'bkp' ? EXT_BKP : EXT_CARTAO;
+
+  // Se já carregado na memória (pelo carregarDados inicial), renderiza direto
+  if (dadosEmMemoria) {
     var sk = document.getElementById('sk-ext-' + tipo);
     var ct = document.getElementById('ct-ext-' + tipo);
     if (sk) sk.style.display = 'none';
@@ -1283,11 +1290,11 @@ function iniciarExtrato(tipo) {
     return;
   }
 
+  // Fallback: busca do GAS se por algum motivo não veio no carregamento inicial
   var sk = document.getElementById('sk-ext-' + tipo);
   if (sk) sk.style.display = 'block';
   var ct = document.getElementById('ct-ext-' + tipo);
   if (ct) ct.classList.add('d-none');
-
   var acao = tipo === 'bkp' ? 'getDeltaBkp' : 'getDeltaCartao';
   chamarGAS(acao).then(function(dados) {
     if (tipo === 'bkp') EXT_BKP = dados;
