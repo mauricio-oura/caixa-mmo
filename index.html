@@ -265,6 +265,34 @@
     /* ── MÉTRICAS RESUMO ── */
     .card-metrica { border-radius: 10px; padding: 14px; border-left: 4px solid #e2e8f0; background: white; }
 
+    /* ── FORM LANÇAMENTO ── */
+    #tab-lancar.active { background: #16a34a; }
+    .bnav-btn.ativo.esmeralda { color: #16a34a; border-top-color: #16a34a; }
+    .app-header.aba-lancar { border-bottom-color: #16a34a; }
+    .form-lancar { max-width: 520px; margin: 0 auto; }
+    .form-lancar .form-label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 4px; }
+    .form-lancar .form-control, .form-lancar .form-select { font-size: 0.88rem; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .form-lancar .form-control:focus, .form-lancar .form-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); outline: none; }
+    .form-lancar .form-control.is-invalid, .form-lancar .form-select.is-invalid { border-color: #dc2626; }
+    .direcao-grupo { display: flex; gap: 10px; }
+    .direcao-btn { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .direcao-btn.saida.ativo   { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+    .direcao-btn.entrada.ativo { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+    .direcao-btn:hover { background: #f8fafc; }
+    .tipo-grupo { display: flex; gap: 8px; }
+    .tipo-btn { flex: 1; padding: 8px 4px; border: 2px solid #e2e8f0; border-radius: 8px; background: white; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .tipo-btn.ativo { border-color: #6f42c1; background: #ede9fe; color: #5b21b6; }
+    .toggle-manual { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; cursor: pointer; user-select: none; }
+    .toggle-manual input[type=checkbox] { width: 18px; height: 18px; accent-color: #f59e0b; cursor: pointer; }
+    .toggle-manual-label { font-size: 0.83rem; font-weight: 600; color: #374151; }
+    .toggle-manual-desc { font-size: 0.75rem; color: #94a3b8; }
+    .btn-lancar { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; border-radius: 10px; background: #16a34a; border: none; color: white; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
+    .btn-lancar:hover { background: #15803d; }
+    .btn-lancar:disabled { background: #86efac; cursor: not-allowed; }
+    .lancar-feedback { border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; font-weight: 500; display: none; margin-top: 12px; }
+    .lancar-feedback.ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+    .lancar-feedback.erro  { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+
     /* ── EXTRATO ── */
     #tab-ext-bkp.active    { background: #0891b2; }
     #tab-ext-cartao.active { background: #7c3aed; }
@@ -306,6 +334,34 @@
     .ext-card-desc { font-weight:600; font-size:0.85rem; color:#1e293b; flex:1; word-break:break-word; }
     .ext-card-val { font-weight:700; font-size:0.9rem; white-space:nowrap; }
     .ext-card-meta { font-size:0.72rem; color:#94a3b8; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    /* ── FORM LANÇAMENTO ── */
+    #tab-lancar.active { background: #16a34a; }
+    .bnav-btn.ativo.esmeralda { color: #16a34a; border-top-color: #16a34a; }
+    .app-header.aba-lancar { border-bottom-color: #16a34a; }
+    .form-lancar { max-width: 520px; margin: 0 auto; }
+    .form-lancar .form-label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 4px; }
+    .form-lancar .form-control, .form-lancar .form-select { font-size: 0.88rem; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .form-lancar .form-control:focus, .form-lancar .form-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); outline: none; }
+    .form-lancar .form-control.is-invalid, .form-lancar .form-select.is-invalid { border-color: #dc2626; }
+    .direcao-grupo { display: flex; gap: 10px; }
+    .direcao-btn { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .direcao-btn.saida.ativo   { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+    .direcao-btn.entrada.ativo { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+    .direcao-btn:hover { background: #f8fafc; }
+    .tipo-grupo { display: flex; gap: 8px; }
+    .tipo-btn { flex: 1; padding: 8px 4px; border: 2px solid #e2e8f0; border-radius: 8px; background: white; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .tipo-btn.ativo { border-color: #6f42c1; background: #ede9fe; color: #5b21b6; }
+    .toggle-manual { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; cursor: pointer; user-select: none; }
+    .toggle-manual input[type=checkbox] { width: 18px; height: 18px; accent-color: #f59e0b; cursor: pointer; }
+    .toggle-manual-label { font-size: 0.83rem; font-weight: 600; color: #374151; }
+    .toggle-manual-desc { font-size: 0.75rem; color: #94a3b8; }
+    .btn-lancar { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; border-radius: 10px; background: #16a34a; border: none; color: white; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
+    .btn-lancar:hover { background: #15803d; }
+    .btn-lancar:disabled { background: #86efac; cursor: not-allowed; }
+    .lancar-feedback { border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; font-weight: 500; display: none; margin-top: 12px; }
+    .lancar-feedback.ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+    .lancar-feedback.erro  { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+
     /* ── EXTRATO ── */
     .badge-origem-bkp    { background:#e0f2fe; color:#0369a1; }
     .badge-origem-lanc   { background:#dcfce7; color:#15803d; }
@@ -440,6 +496,7 @@
       <li class="nav-item"><button class="nav-link nav-link-sm active" id="tab-lancamentos" data-bs-toggle="pill" data-bs-target="#painel-lancamentos" onclick="alternarAba('lancamentos')">Gerais</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-cartao" data-bs-toggle="pill" data-bs-target="#painel-cartao" onclick="alternarAba('cartao')">Cartão</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-resumo" data-bs-toggle="pill" data-bs-target="#painel-resumo" onclick="alternarAba('resumo')">🎯 Planejado</button></li>
+      <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-lancar" data-bs-toggle="pill" data-bs-target="#painel-lancar" onclick="alternarAba('lancar')">➕ Lançamento</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-bkp" data-bs-toggle="pill" data-bs-target="#painel-ext-bkp" onclick="alternarAba('ext-bkp')">📋 Extrato Gerais</button></li>
       <li class="nav-item"><button class="nav-link nav-link-sm" id="tab-ext-cartao" data-bs-toggle="pill" data-bs-target="#painel-ext-cartao" onclick="alternarAba('ext-cartao')">💳 Extrato Cartão</button></li>
     </ul>
@@ -543,6 +600,76 @@
       </div>
 
 
+      <!-- ABA LANÇAMENTO -->
+      <div class="tab-pane fade" id="painel-lancar">
+        <div class="container-card">
+          <div class="form-lancar">
+
+            <div class="mb-3">
+              <label class="form-label">💰 Valor (R$) *</label>
+              <input type="number" id="lanc-valor" class="form-control" placeholder="0,00" min="0.01" step="0.01">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">📝 Descrição *</label>
+              <input type="text" id="lanc-desc" class="form-control" placeholder="Ex: Supermercado, Farmácia...">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">🏦 Conta *</label>
+              <select id="lanc-conta" class="form-select">
+                <option value="">Selecionar...</option>
+                <option value="Itaú">Itaú (BK1)</option>
+                <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                <option value="Dinheiro">Dinheiro (CX)</option>
+                <option value="Investimento 1">Investimento 1 (INV1)</option>
+                <option value="Investimento 2">Investimento 2 (INV2)</option>
+                <option value="A confirmar">A confirmar (X)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">↕️ Direção *</label>
+              <div class="direcao-grupo">
+                <button class="direcao-btn saida ativo" id="btn-saida" onclick="selecionarDirecao('Saída')">
+                  ⬇️ Saída
+                </button>
+                <button class="direcao-btn entrada" id="btn-entrada" onclick="selecionarDirecao('Entrada')">
+                  ⬆️ Entrada
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">🏷 Tipo de Despesa *</label>
+              <div class="tipo-grupo">
+                <button class="tipo-btn ativo" id="tipo-DV" onclick="selecionarTipo('DV')">DV<br><small style="font-weight:400;font-size:0.68rem;">Variável</small></button>
+                <button class="tipo-btn" id="tipo-DF" onclick="selecionarTipo('DF')">DF<br><small style="font-weight:400;font-size:0.68rem;">Fixa</small></button>
+                <button class="tipo-btn" id="tipo-NA" onclick="selecionarTipo('NA')">NA<br><small style="font-weight:400;font-size:0.68rem;">N/A</small></button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="toggle-manual" for="lanc-manual">
+                <input type="checkbox" id="lanc-manual">
+                <div>
+                  <div class="toggle-manual-label">⏳ Aguardando confirmação</div>
+                  <div class="toggle-manual-desc">Marque se o valor ainda não foi debitado/creditado no banco</div>
+                </div>
+              </label>
+            </div>
+
+            <button class="btn-lancar" id="btn-lancar" onclick="enviarLancamento()">
+              ➕ Registrar Lançamento
+            </button>
+
+            <div class="lancar-feedback" id="lancar-feedback"></div>
+
+          </div>
+        </div>
+      </div>
+
       <!-- ABA DESP. GERAIS (bkp) -->
       <div class="tab-pane fade" id="painel-ext-bkp">
         <div class="container-card">
@@ -624,6 +751,9 @@
       <button class="bnav-btn" id="bnav-resumo" onclick="alternarAba('resumo')">
         <span class="icon">🎯</span><span class="bnav-label">Planejado</span>
       </button>
+      <button class="bnav-btn" id="bnav-lancar" onclick="alternarAba('lancar')">
+        <span class="icon">➕</span><span class="bnav-label">Lançar</span>
+      </button>
       <button class="bnav-btn" id="bnav-ext-bkp" onclick="alternarAba('ext-bkp')">
         <span class="icon">📋</span><span class="bnav-label">Ext.Gerais</span>
       </button>
@@ -672,6 +802,8 @@ let EXT_BKP_FILTRADO = [], EXT_CARTAO_FILTRADO = [];
 let GRAFICO = null, PIZZA = null;
 let ABA = 'lancamentos';
 let ABA_RENDERIZADA = {};
+let LANC_DIRECAO = 'Saída';
+let LANC_TIPO = 'DV';
 
 // ══════════════════════════════════════════════════════════
 // AUTENTICAÇÃO
@@ -1067,15 +1199,15 @@ function aplicarFiltros() {
 function alternarAba(aba) {
   ABA = aba;
   // Título dinâmico
-  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro', 'ext-bkp':'📋 Extrato Gerais — Painel Financeiro', 'ext-cartao':'💳 Extrato Cartão — Painel Financeiro'};
+  var titulos = {lancamentos:'📋 Gerais — Painel Financeiro', cartao:'💳 Cartão — Painel Financeiro', resumo:'🎯 Planejado — Painel Financeiro', 'ext-bkp':'📋 Extrato Gerais — Painel Financeiro', 'ext-cartao':'💳 Extrato Cartão — Painel Financeiro', lancar:'➕ Novo Lançamento — Painel Financeiro'};
   document.title = titulos[aba] || 'Painel Financeiro';
   // Header cor
   var hdr = document.getElementById('app-header');
   hdr.className = 'app-header aba-' + aba;
   // Bottom nav
   document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('ativo','verde','roxo'); });
-  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo','ext-bkp':'bnav-ext-bkp','ext-cartao':'bnav-ext-cartao'};
-  var bnavClsMap = {cartao:'verde',resumo:'roxo','ext-bkp':'ciano','ext-cartao':'violeta'};
+  var bnavMap = {lancamentos:'bnav-lancamentos',cartao:'bnav-cartao',resumo:'bnav-resumo','ext-bkp':'bnav-ext-bkp','ext-cartao':'bnav-ext-cartao',lancar:'bnav-lancar'};
+  var bnavClsMap = {cartao:'verde',resumo:'roxo','ext-bkp':'ciano','ext-cartao':'violeta',lancar:'esmeralda'};
   var btn = document.getElementById(bnavMap[aba]);
   if (btn) { btn.classList.add('ativo'); if(bnavClsMap[aba]) btn.classList.add(bnavClsMap[aba]); }
   // Tab pills desktop
@@ -1096,6 +1228,13 @@ function alternarAba(aba) {
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
+  } else if (aba === 'lancar') {
+    document.getElementById('filtros-topo').style.display = 'none';
+    document.getElementById('app').classList.add('modo-extrato');
+    var _gcL = document.getElementById('card-grafico'); if(_gcL){ _gcL.classList.add('oculto'); }
+    document.getElementById('titulo-grafico').textContent = '➕ NOVO LANÇAMENTO';
+    setTimeout(ajustarAlturas, 50);
+
   } else if (aba === 'ext-bkp' || aba === 'ext-cartao') {
     document.getElementById('grupo-historico').classList.add('d-none');
     document.getElementById('grupo-resumo').classList.add('d-none');
@@ -1523,6 +1662,104 @@ function renderizarExtrato(tipo, lista) {
       cHtml += '</div></div>';
     });
     cardsWrap.innerHTML = cHtml;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FORM DE LANÇAMENTO
+// ══════════════════════════════════════════════════════════
+function selecionarDirecao(dir) {
+  LANC_DIRECAO = dir;
+  document.getElementById('btn-saida').classList.toggle('ativo', dir === 'Saída');
+  document.getElementById('btn-entrada').classList.toggle('ativo', dir === 'Entrada');
+}
+
+function selecionarTipo(tipo) {
+  LANC_TIPO = tipo;
+  ['DV','DF','NA'].forEach(function(t){
+    document.getElementById('tipo-' + t).classList.toggle('ativo', t === tipo);
+  });
+}
+
+function limparFormLancar() {
+  document.getElementById('lanc-valor').value  = '';
+  document.getElementById('lanc-desc').value   = '';
+  document.getElementById('lanc-conta').value  = '';
+  document.getElementById('lanc-manual').checked = false;
+  selecionarDirecao('Saída');
+  selecionarTipo('DV');
+  document.getElementById('lanc-valor').focus();
+}
+
+function mostrarFeedback(msg, tipo) {
+  var el = document.getElementById('lancar-feedback');
+  el.textContent = msg;
+  el.className   = 'lancar-feedback ' + tipo;
+  el.style.display = 'block';
+  if (tipo === 'ok') setTimeout(function(){ el.style.display = 'none'; }, 3000);
+}
+
+async function enviarLancamento() {
+  var valor  = parseFloat(document.getElementById('lanc-valor').value);
+  var desc   = document.getElementById('lanc-desc').value.trim();
+  var conta  = document.getElementById('lanc-conta').value;
+  var manual = document.getElementById('lanc-manual').checked;
+
+  // Validações
+  document.getElementById('lanc-valor').classList.remove('is-invalid');
+  document.getElementById('lanc-desc').classList.remove('is-invalid');
+  document.getElementById('lanc-conta').classList.remove('is-invalid');
+
+  var erros = false;
+  if (!valor || valor <= 0) { document.getElementById('lanc-valor').classList.add('is-invalid'); erros = true; }
+  if (!desc)                { document.getElementById('lanc-desc').classList.add('is-invalid');  erros = true; }
+  if (!conta)               { document.getElementById('lanc-conta').classList.add('is-invalid'); erros = true; }
+  if (erros) { mostrarFeedback('Preencha os campos obrigatórios.', 'erro'); return; }
+
+  var btn = document.getElementById('btn-lancar');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Registrando...';
+
+  try {
+    var resp = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: TOKEN,
+        acao:  'novoLancamento',
+        dados: {
+          valor:    valor,
+          descricao: desc,
+          conta:    conta,
+          direcao:  LANC_DIRECAO,
+          tipo:     LANC_TIPO,
+          manual:   manual
+        }
+      })
+    });
+
+    var resultado = JSON.parse(await resp.text());
+
+    if (resultado.erro) throw new Error(resultado.erro);
+
+    // Sucesso — invalida cache de lancamentos e ext-bkp para forçar recarga
+    var prefixoCache = 'pf_' + CLIENTE_KEY + '_cache_';
+    ['lancamentos', 'ext-bkp'].forEach(function(k){
+      localStorage.removeItem(prefixoCache + k);
+    });
+    ABA_RENDERIZADA['lancamentos'] = false;
+    ABA_RENDERIZADA['ext-bkp']    = false;
+    DADOS_LANCAMENTOS = null;
+    EXT_BKP = null;
+
+    mostrarFeedback('✅ Lançamento registrado com sucesso!', 'ok');
+    limparFormLancar();
+
+  } catch(err) {
+    mostrarFeedback('❌ Erro: ' + err.message, 'erro');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '➕ Registrar Lançamento';
   }
 }
 
