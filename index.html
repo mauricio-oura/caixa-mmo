@@ -439,7 +439,7 @@
   <div class="conteudo-principal">
 
     <!-- Gráfico -->
-    <div class="container-card mb-3 py-2">
+    <div class="container-card mb-3 py-2" id="card-grafico">
       <div id="titulo-grafico" class="fw-bold mb-2" style="font-size:0.78rem;color:#94a3b8;letter-spacing:0.05em;">EVOLUÇÃO DOS SUBTOTAIS</div>
       <div class="row">
         <div class="col-12" id="col-grafico-principal"><div class="chart-container"><canvas id="graficoSubtotais"></canvas></div></div>
@@ -671,6 +671,15 @@ function onLogin(r) {
   localStorage.setItem('pf_token', TOKEN);
   localStorage.setItem('pf_nome',  p.name    || p.email);
   localStorage.setItem('pf_foto',  p.picture || '');
+  // Token renovado silenciosamente enquanto app estava aberto
+  if (document.getElementById('app').style.display !== 'none') {
+    if (ABA === 'ext-bkp' || ABA === 'ext-cartao') {
+      var tipo = ABA === 'ext-bkp' ? 'bkp' : 'cartao';
+      ABA_RENDERIZADA[ABA] = false;
+      iniciarExtrato(tipo);
+    }
+    return;
+  }
   mostrarApp(p.name || p.email, p.picture || '');
 }
 
@@ -1012,7 +1021,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
     document.getElementById('col-grafico-pizza').classList.remove('d-none');
-    var _gc1 = document.getElementById('titulo-grafico').closest('.container-card'); if(_gc1){ _gc1.style.cssText=''; }
+    var _gc1 = document.getElementById('card-grafico'); if(_gc1){ _gc1.style.display=''; }
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
@@ -1021,7 +1030,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    var _gc = document.getElementById('titulo-grafico').closest('.container-card'); if(_gc){ _gc.style.display='none'; _gc.style.height='0'; _gc.style.margin='0'; _gc.style.padding='0'; _gc.style.overflow='hidden'; }
+    var _gc = document.getElementById('card-grafico'); if(_gc){ _gc.style.display='none'; }
     setTimeout(ajustarAlturas, 50);
     var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
     if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
@@ -1030,7 +1039,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    var _gc2 = document.getElementById('titulo-grafico').closest('.container-card'); if(_gc2){ _gc2.style.cssText=''; }
+    var _gc2 = document.getElementById('card-grafico'); if(_gc2){ _gc2.style.display=''; }
     document.getElementById('titulo-grafico').textContent = 'EVOLUÇÃO DOS SUBTOTAIS';
     setTimeout(ajustarAlturas, 50);
     var dados = aba==='lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
@@ -1260,18 +1269,35 @@ function iniciarExtrato(tipo) {
   if (ct) ct.classList.add('d-none');
 
   var acao = tipo === 'bkp' ? 'getDeltaBkp' : 'getDeltaCartao';
-  chamarGAS(acao).then(function(dados) {
-    if (tipo === 'bkp') EXT_BKP = dados;
-    else EXT_CARTAO = dados;
-    if (sk) sk.style.display = 'none';
-    if (ct) ct.classList.remove('d-none');
-    construirChipsExt(tipo);
-    filtrarExt(tipo);
-    ABA_RENDERIZADA['ext-' + tipo] = true;
-  }).catch(function(err) {
-    if (sk) sk.style.display = 'none';
-    toast('⚠️ Erro ao carregar extrato: ' + err.message, 5000);
-  });
+
+  function executar() {
+    chamarGAS(acao).then(function(dados) {
+      if (tipo === 'bkp') EXT_BKP = dados;
+      else EXT_CARTAO = dados;
+      if (sk) sk.style.display = 'none';
+      if (ct) ct.classList.remove('d-none');
+      construirChipsExt(tipo);
+      filtrarExt(tipo);
+      ABA_RENDERIZADA['ext-' + tipo] = true;
+    }).catch(function(err) {
+      if (sk) sk.style.display = 'none';
+      if (err.message.includes('Token') || err.message.includes('expirado')) {
+        // Token expirado: pede novo token silenciosamente via GSI
+        toast('🔄 Sessão expirada. Renovando login...', 3000);
+        google.accounts.id.prompt(function(notif) {
+          // Se não conseguiu renovar silenciosamente, redireciona ao login
+          if (notif.isNotDisplayed() || notif.isSkippedMoment()) {
+            voltarAoLogin('Sessão expirada. Faça login novamente.');
+          }
+          // Se conseguiu, o onLogin vai atualizar o TOKEN e podemos tentar de novo
+        });
+      } else {
+        toast('⚠️ Erro ao carregar extrato: ' + err.message, 5000);
+      }
+    });
+  }
+
+  executar();
 }
 
 function carregarHistorico(tipo) {
@@ -1287,7 +1313,11 @@ function carregarHistorico(tipo) {
     toast('✅ Histórico completo carregado — ' + dados.length + ' registros', 3000);
   }).catch(function(err) {
     if (btn) { btn.disabled = false; btn.textContent = '📂 Histórico completo'; }
-    toast('⚠️ Erro: ' + err.message, 5000);
+    if (err.message.includes('Token') || err.message.includes('expirado')) {
+      voltarAoLogin('Sessão expirada. Faça login novamente.');
+    } else {
+      toast('⚠️ Erro: ' + err.message, 5000);
+    }
   });
 }
 
