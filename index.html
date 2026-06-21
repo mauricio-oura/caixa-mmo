@@ -722,10 +722,15 @@ async function carregarDados() {
     toast('✅ Dados atualizados às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
     atualizarCacheInfo();
   } catch(err) {
+    console.error('Erro ao carregar dados:', err.message);
     overlayHide();
-    document.getElementById('erro-login').textContent = 'Erro: ' + err.message;
-    document.getElementById('tela-login').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
+    if (err.message.includes('Token') || err.message.includes('Acesso negado')) {
+      voltarAoLogin('Sessão expirada. Faça login novamente.');
+    } else {
+      // Erro nos dados — mostra app mesmo assim com aviso
+      toast('⚠️ Erro: ' + err.message, 6000);
+      iniciarUI();
+    }
   }
 }
 
