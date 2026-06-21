@@ -193,6 +193,7 @@
 
     /* ── GRÁFICO ── */
     .chart-container { position: relative; height: 220px; width: 100%; }
+    #card-grafico.oculto { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; min-height: 0 !important; }
     @media (max-width: 640px) { .chart-container { height: 180px; } }
 
     /* ── TABELAS DESKTOP ── */
@@ -671,15 +672,6 @@ function onLogin(r) {
   localStorage.setItem('pf_token', TOKEN);
   localStorage.setItem('pf_nome',  p.name    || p.email);
   localStorage.setItem('pf_foto',  p.picture || '');
-  // Token renovado silenciosamente enquanto app estava aberto
-  if (document.getElementById('app').style.display !== 'none') {
-    if (ABA === 'ext-bkp' || ABA === 'ext-cartao') {
-      var tipo = ABA === 'ext-bkp' ? 'bkp' : 'cartao';
-      ABA_RENDERIZADA[ABA] = false;
-      iniciarExtrato(tipo);
-    }
-    return;
-  }
   mostrarApp(p.name || p.email, p.picture || '');
 }
 
@@ -723,7 +715,7 @@ function forcarAtualizacao() {
   btn.classList.add('girando');
   btn.disabled = true;
   // Limpa só o cache de dados, mantém token e preferências
-  ['lancamentos','cartao','resumo','dv'].forEach(function(k){ localStorage.removeItem('pf_cache_'+k); });
+  ['lancamentos','cartao','resumo','dv','ext-bkp','ext-cartao'].forEach(function(k){ localStorage.removeItem('pf_cache_'+k); });
   ABA_RENDERIZADA = {};
   // Reseta skeletons
   ['lancamentos','cartao','resumo'].forEach(function(id){
@@ -1021,7 +1013,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.remove('d-none');
     document.getElementById('col-grafico-principal').className = 'col-md-6';
     document.getElementById('col-grafico-pizza').classList.remove('d-none');
-    var _gc1 = document.getElementById('card-grafico'); if(_gc1){ _gc1.style.display=''; }
+    var _gc1 = document.getElementById('card-grafico'); if(_gc1){ _gc1.classList.remove('oculto'); }
     document.getElementById('titulo-grafico').textContent = 'PLANEJAMENTO: DESPESAS VS RENDAS';
     setTimeout(ajustarAlturas, 50);
     calcularResumo();
@@ -1030,7 +1022,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    var _gc = document.getElementById('card-grafico'); if(_gc){ _gc.style.display='none'; }
+    var _gc = document.getElementById('card-grafico'); if(_gc){ _gc.classList.add('oculto'); }
     setTimeout(ajustarAlturas, 50);
     var tipo = aba === 'ext-bkp' ? 'bkp' : 'cartao';
     if (!ABA_RENDERIZADA[aba]) iniciarExtrato(tipo);
@@ -1039,7 +1031,7 @@ function alternarAba(aba) {
     document.getElementById('grupo-resumo').classList.add('d-none');
     document.getElementById('col-grafico-principal').className = 'col-12';
     document.getElementById('col-grafico-pizza').classList.add('d-none');
-    var _gc2 = document.getElementById('card-grafico'); if(_gc2){ _gc2.style.display=''; }
+    var _gc2 = document.getElementById('card-grafico'); if(_gc2){ _gc2.classList.remove('oculto'); }
     document.getElementById('titulo-grafico').textContent = 'EVOLUÇÃO DOS SUBTOTAIS';
     setTimeout(ajustarAlturas, 50);
     var dados = aba==='lancamentos' ? DADOS_LANCAMENTOS : DADOS_CARTAO;
@@ -1263,41 +1255,40 @@ function atualizarGrafico() {
 // EXTRATO BKP + CARTÃO
 // ══════════════════════════════════════════════════════════
 function iniciarExtrato(tipo) {
+  // Tenta servir do cache primeiro (igual às abas principais)
+  var cached = cacheGet('ext-' + tipo);
+  if (cached) {
+    if (tipo === 'bkp') EXT_BKP = cached;
+    else EXT_CARTAO = cached;
+    var sk = document.getElementById('sk-ext-' + tipo);
+    var ct = document.getElementById('ct-ext-' + tipo);
+    if (sk) sk.style.display = 'none';
+    if (ct) ct.classList.remove('d-none');
+    construirChipsExt(tipo);
+    filtrarExt(tipo);
+    ABA_RENDERIZADA['ext-' + tipo] = true;
+    return;
+  }
+
   var sk = document.getElementById('sk-ext-' + tipo);
   if (sk) sk.style.display = 'block';
   var ct = document.getElementById('ct-ext-' + tipo);
   if (ct) ct.classList.add('d-none');
 
   var acao = tipo === 'bkp' ? 'getDeltaBkp' : 'getDeltaCartao';
-
-  function executar() {
-    chamarGAS(acao).then(function(dados) {
-      if (tipo === 'bkp') EXT_BKP = dados;
-      else EXT_CARTAO = dados;
-      if (sk) sk.style.display = 'none';
-      if (ct) ct.classList.remove('d-none');
-      construirChipsExt(tipo);
-      filtrarExt(tipo);
-      ABA_RENDERIZADA['ext-' + tipo] = true;
-    }).catch(function(err) {
-      if (sk) sk.style.display = 'none';
-      if (err.message.includes('Token') || err.message.includes('expirado')) {
-        // Token expirado: pede novo token silenciosamente via GSI
-        toast('🔄 Sessão expirada. Renovando login...', 3000);
-        google.accounts.id.prompt(function(notif) {
-          // Se não conseguiu renovar silenciosamente, redireciona ao login
-          if (notif.isNotDisplayed() || notif.isSkippedMoment()) {
-            voltarAoLogin('Sessão expirada. Faça login novamente.');
-          }
-          // Se conseguiu, o onLogin vai atualizar o TOKEN e podemos tentar de novo
-        });
-      } else {
-        toast('⚠️ Erro ao carregar extrato: ' + err.message, 5000);
-      }
-    });
-  }
-
-  executar();
+  chamarGAS(acao).then(function(dados) {
+    if (tipo === 'bkp') EXT_BKP = dados;
+    else EXT_CARTAO = dados;
+    cacheSet('ext-' + tipo, dados);
+    if (sk) sk.style.display = 'none';
+    if (ct) ct.classList.remove('d-none');
+    construirChipsExt(tipo);
+    filtrarExt(tipo);
+    ABA_RENDERIZADA['ext-' + tipo] = true;
+  }).catch(function(err) {
+    if (sk) sk.style.display = 'none';
+    toast('⚠️ Erro ao carregar extrato: ' + err.message, 5000);
+  });
 }
 
 function carregarHistorico(tipo) {
