@@ -714,7 +714,11 @@ async function chamarGAS(acao) {
   const text = await resp.text();
   const dados = JSON.parse(text);
   if (dados.erro) {
-    if (dados.erro.includes('Token')) { localStorage.removeItem('pf_token'); location.reload(); }
+    // Só volta ao login em erros de autenticação
+    if (dados.erro.includes('Token') || dados.erro.includes('Acesso negado')) {
+      localStorage.removeItem('pf_token');
+      location.reload();
+    }
     throw new Error(dados.erro);
   }
   return dados;
@@ -742,11 +746,12 @@ async function carregarDados() {
       chamarGAS('getDadosCartaoC')    .then(function(d){ stepAtivo(2); return d; }),
       chamarGAS('getDadosResumo')     .then(function(d){ stepAtivo(3); return d; }),
       chamarGAS('getDadosDV'),
-      chamarGAS('getDadosExtrato')
+      chamarGAS('getDadosExtrato').catch(function(e){ console.warn('Extrato indisponível:', e.message); return []; })
     ]);
     DADOS_LANCAMENTOS = lanc; DADOS_CARTAO = cartao; DADOS_RESUMO = resumo; DADOS_EXTRATO = extrato;
     cacheSet('lancamentos', lanc); cacheSet('cartao', cartao);
-    cacheSet('resumo', resumo);    cacheSet('dv', dv); cacheSet('extrato', extrato);
+    cacheSet('resumo', resumo);    cacheSet('dv', dv);
+    if (extrato && extrato.length) cacheSet('extrato', extrato);
     preencherDV(dv);
     overlayHide();
     iniciarUI();
@@ -754,9 +759,16 @@ async function carregarDados() {
     atualizarCacheInfo();
   } catch(err) {
     overlayHide();
-    document.getElementById('erro-login').textContent = 'Erro: ' + err.message;
-    document.getElementById('tela-login').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
+    // Só volta à tela de login em erros de autenticação
+    if (err.message.includes('Token') || err.message.includes('Acesso negado')) {
+      document.getElementById('erro-login').textContent = 'Erro: ' + err.message;
+      document.getElementById('tela-login').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    } else {
+      // Erro parcial: mostra toast e continua com o que carregou
+      toast('⚠️ ' + err.message, 5000);
+      iniciarUI();
+    }
   }
 }
 
