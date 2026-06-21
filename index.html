@@ -1720,11 +1720,14 @@ async function enviarLancamento() {
   document.getElementById('lanc-desc').classList.remove('is-invalid');
   document.getElementById('lanc-conta').classList.remove('is-invalid');
 
-  // Converte valor negativo para positivo automaticamente
+  // Rejeita valor negativo
   if (valor < 0) {
-    valor = Math.abs(valor);
-    document.getElementById('lanc-valor').value = valor;
-    mostrarFeedback('ℹ️ Valor convertido para positivo. O sinal é definido pela direção (' + LANC_DIRECAO + ').', 'info');
+    document.getElementById('lanc-valor').value = '';
+    document.getElementById('lanc-valor').classList.add('is-invalid');
+    mostrarFeedback('⚠️ Insira apenas valores positivos. A direção (Saída/Entrada) define o sinal.', 'info');
+    btn.disabled = false;
+    btn.textContent = '➕ Registrar Lançamento';
+    return;
   }
 
   var erros = false;
