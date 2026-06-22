@@ -269,23 +269,34 @@
     #tab-lancar.active { background: #16a34a; }
     .bnav-btn.ativo.esmeralda { color: #16a34a; border-top-color: #16a34a; }
     .app-header.aba-lancar { border-bottom-color: #16a34a; }
-    .form-lancar { max-width: 520px; margin: 0 auto; }
+    .form-lancar { max-width: 540px; margin: 0 auto; }
     .form-lancar .form-label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 4px; }
     .form-lancar .form-control, .form-lancar .form-select { font-size: 0.88rem; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; transition: border-color 0.15s, box-shadow 0.15s; }
     .form-lancar .form-control:focus, .form-lancar .form-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); outline: none; }
     .form-lancar .form-control.is-invalid, .form-lancar .form-select.is-invalid { border-color: #dc2626; }
-    .direcao-grupo { display: flex; gap: 10px; }
-    .direcao-btn { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
-    .direcao-btn.saida.ativo   { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
-    .direcao-btn.entrada.ativo { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
-    .direcao-btn:hover { background: #f8fafc; }
+
+    /* Fluxo visual de contas com seta */
+    .fluxo-contas { display: flex; align-items: center; gap: 10px; }
+    .fluxo-select { flex: 1; min-width: 0; }
+    .fluxo-select select { width: 100%; font-size: 0.85rem; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: white; cursor: pointer; transition: all 0.15s; }
+    .fluxo-select select:focus { border-color: #16a34a; outline: none; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+    .fluxo-select select.tem-valor { border-color: #16a34a; background: #f0fdf4; font-weight: 600; }
+    .fluxo-select select.is-invalid { border-color: #dc2626; }
+    .fluxo-seta { font-size: 1.6rem; color: #94a3b8; font-weight: 300; flex-shrink: 0; user-select: none; }
+    .fluxo-seta.ativa { color: #16a34a; }
+
+    /* Tipo */
     .tipo-grupo { display: flex; gap: 8px; }
     .tipo-btn { flex: 1; padding: 8px 4px; border: 2px solid #e2e8f0; border-radius: 8px; background: white; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; }
     .tipo-btn.ativo { border-color: #6f42c1; background: #ede9fe; color: #5b21b6; }
+
+    /* Aguardando */
     .toggle-manual { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; cursor: pointer; user-select: none; }
     .toggle-manual input[type=checkbox] { width: 18px; height: 18px; accent-color: #f59e0b; cursor: pointer; }
     .toggle-manual-label { font-size: 0.83rem; font-weight: 600; color: #374151; }
     .toggle-manual-desc { font-size: 0.75rem; color: #94a3b8; }
+
+    /* Botão e feedback */
     .btn-lancar { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; border-radius: 10px; background: #16a34a; border: none; color: white; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
     .btn-lancar:hover { background: #15803d; }
     .btn-lancar:disabled { background: #86efac; cursor: not-allowed; }
@@ -293,6 +304,12 @@
     .lancar-feedback.ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
     .lancar-feedback.erro  { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
     .lancar-feedback.info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; }
+
+    /* Badge pendente na aba Gerais */
+    .badge-pendente { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; font-size: 0.68rem; padding: 2px 7px; border-radius: 999px; font-weight: 700; }
+    .btn-confirmar { font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; background: #16a34a; color: white; border: none; cursor: pointer; white-space: nowrap; }
+    .btn-confirmar:hover { background: #15803d; }
+    .btn-confirmar:disabled { background: #86efac; cursor: not-allowed; }
 
     /* ── EXTRATO ── */
     #tab-ext-bkp.active    { background: #0891b2; }
@@ -339,23 +356,34 @@
     #tab-lancar.active { background: #16a34a; }
     .bnav-btn.ativo.esmeralda { color: #16a34a; border-top-color: #16a34a; }
     .app-header.aba-lancar { border-bottom-color: #16a34a; }
-    .form-lancar { max-width: 520px; margin: 0 auto; }
+    .form-lancar { max-width: 540px; margin: 0 auto; }
     .form-lancar .form-label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 4px; }
     .form-lancar .form-control, .form-lancar .form-select { font-size: 0.88rem; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; transition: border-color 0.15s, box-shadow 0.15s; }
     .form-lancar .form-control:focus, .form-lancar .form-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); outline: none; }
     .form-lancar .form-control.is-invalid, .form-lancar .form-select.is-invalid { border-color: #dc2626; }
-    .direcao-grupo { display: flex; gap: 10px; }
-    .direcao-btn { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
-    .direcao-btn.saida.ativo   { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
-    .direcao-btn.entrada.ativo { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
-    .direcao-btn:hover { background: #f8fafc; }
+
+    /* Fluxo visual de contas com seta */
+    .fluxo-contas { display: flex; align-items: center; gap: 10px; }
+    .fluxo-select { flex: 1; min-width: 0; }
+    .fluxo-select select { width: 100%; font-size: 0.85rem; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: white; cursor: pointer; transition: all 0.15s; }
+    .fluxo-select select:focus { border-color: #16a34a; outline: none; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+    .fluxo-select select.tem-valor { border-color: #16a34a; background: #f0fdf4; font-weight: 600; }
+    .fluxo-select select.is-invalid { border-color: #dc2626; }
+    .fluxo-seta { font-size: 1.6rem; color: #94a3b8; font-weight: 300; flex-shrink: 0; user-select: none; }
+    .fluxo-seta.ativa { color: #16a34a; }
+
+    /* Tipo */
     .tipo-grupo { display: flex; gap: 8px; }
     .tipo-btn { flex: 1; padding: 8px 4px; border: 2px solid #e2e8f0; border-radius: 8px; background: white; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; }
     .tipo-btn.ativo { border-color: #6f42c1; background: #ede9fe; color: #5b21b6; }
+
+    /* Aguardando */
     .toggle-manual { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; cursor: pointer; user-select: none; }
     .toggle-manual input[type=checkbox] { width: 18px; height: 18px; accent-color: #f59e0b; cursor: pointer; }
     .toggle-manual-label { font-size: 0.83rem; font-weight: 600; color: #374151; }
     .toggle-manual-desc { font-size: 0.75rem; color: #94a3b8; }
+
+    /* Botão e feedback */
     .btn-lancar { width: 100%; padding: 13px; font-size: 1rem; font-weight: 700; border-radius: 10px; background: #16a34a; border: none; color: white; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
     .btn-lancar:hover { background: #15803d; }
     .btn-lancar:disabled { background: #86efac; cursor: not-allowed; }
@@ -363,6 +391,12 @@
     .lancar-feedback.ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
     .lancar-feedback.erro  { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
     .lancar-feedback.info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; }
+
+    /* Badge pendente na aba Gerais */
+    .badge-pendente { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; font-size: 0.68rem; padding: 2px 7px; border-radius: 999px; font-weight: 700; }
+    .btn-confirmar { font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; background: #16a34a; color: white; border: none; cursor: pointer; white-space: nowrap; }
+    .btn-confirmar:hover { background: #15803d; }
+    .btn-confirmar:disabled { background: #86efac; cursor: not-allowed; }
 
     /* ── EXTRATO ── */
     .badge-origem-bkp    { background:#e0f2fe; color:#0369a1; }
@@ -617,38 +651,45 @@
               <input type="text" id="lanc-desc" class="form-control" placeholder="Ex: Supermercado, Farmácia...">
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">🏦 Conta *</label>
-              <select id="lanc-conta" class="form-select">
-                <option value="">Selecionar...</option>
-                <option value="Itaú">Itaú (BK1)</option>
-                <option value="Mercado Pago">Mercado Pago (BK2)</option>
-                <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
-                <option value="Dinheiro">Dinheiro (CX)</option>
-                <option value="Investimento 1">Investimento 1 (INV1)</option>
-                <option value="Investimento 2">Investimento 2 (INV2)</option>
-                <option value="A confirmar">A confirmar (X)</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">↕️ Direção *</label>
-              <div class="direcao-grupo">
-                <button class="direcao-btn saida ativo" id="btn-saida" onclick="selecionarDirecao('Saída')">
-                  ⬇️ Saída
-                </button>
-                <button class="direcao-btn entrada" id="btn-entrada" onclick="selecionarDirecao('Entrada')">
-                  ⬆️ Entrada
-                </button>
+            <!-- Fluxo visual: Origem → Destino -->
+            <div class="mb-2">
+              <label class="form-label">🔀 Fluxo * <small style="font-weight:400;color:#94a3b8;">(preencha origem e/ou destino)</small></label>
+              <div class="fluxo-contas">
+                <div class="fluxo-select">
+                  <select id="lanc-origem" onchange="atualizarFluxo()">
+                    <option value="">— origem —</option>
+                    <option value="Itaú">Itaú (BK1)</option>
+                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                    <option value="Dinheiro">Dinheiro (CX)</option>
+                    <option value="Investimento 1">Investimento 1 (INV1)</option>
+                    <option value="Investimento 2">Investimento 2 (INV2)</option>
+                    <option value="A confirmar">A confirmar (X)</option>
+                  </select>
+                </div>
+                <span class="fluxo-seta" id="fluxo-seta">→</span>
+                <div class="fluxo-select">
+                  <select id="lanc-destino" onchange="atualizarFluxo()">
+                    <option value="">— destino —</option>
+                    <option value="Itaú">Itaú (BK1)</option>
+                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                    <option value="Dinheiro">Dinheiro (CX)</option>
+                    <option value="Investimento 1">Investimento 1 (INV1)</option>
+                    <option value="Investimento 2">Investimento 2 (INV2)</option>
+                    <option value="A confirmar">A confirmar (X)</option>
+                  </select>
+                </div>
               </div>
+              <div id="fluxo-preview" style="font-size:0.78rem;color:#94a3b8;margin-top:6px;min-height:18px;"></div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" id="bloco-tipo">
               <label class="form-label">🏷 Tipo de Despesa *</label>
               <div class="tipo-grupo">
                 <button class="tipo-btn ativo" id="tipo-DV" onclick="selecionarTipo('DV')">DV<br><small style="font-weight:400;font-size:0.68rem;">Variável</small></button>
                 <button class="tipo-btn" id="tipo-DF" onclick="selecionarTipo('DF')">DF<br><small style="font-weight:400;font-size:0.68rem;">Fixa</small></button>
-                <button class="tipo-btn" id="tipo-NA" onclick="selecionarTipo('NA')">NA<br><small style="font-weight:400;font-size:0.68rem;">N/A</small></button>
+                <button class="tipo-btn ativo-na" id="tipo-NA" onclick="selecionarTipo('NA')">NA<br><small style="font-weight:400;font-size:0.68rem;">N/A</small></button>
               </div>
             </div>
 
@@ -804,7 +845,6 @@ let EXT_BKP_FILTRADO = [], EXT_CARTAO_FILTRADO = [];
 let GRAFICO = null, PIZZA = null;
 let ABA = 'lancamentos';
 let ABA_RENDERIZADA = {};
-let LANC_DIRECAO = 'Saída';
 let LANC_TIPO = 'DV';
 
 // ══════════════════════════════════════════════════════════
@@ -1676,12 +1716,47 @@ function renderizarExtrato(tipo, lista) {
 }
 
 // ══════════════════════════════════════════════════════════
-// FORM DE LANÇAMENTO
+// FORM DE LANÇAMENTO VISUAL
 // ══════════════════════════════════════════════════════════
-function selecionarDirecao(dir) {
-  LANC_DIRECAO = dir;
-  document.getElementById('btn-saida').classList.toggle('ativo', dir === 'Saída');
-  document.getElementById('btn-entrada').classList.toggle('ativo', dir === 'Entrada');
+function atualizarFluxo() {
+  var origem  = document.getElementById('lanc-origem').value;
+  var destino = document.getElementById('lanc-destino').value;
+  var seta    = document.getElementById('fluxo-seta');
+  var preview = document.getElementById('fluxo-preview');
+  var blocoTipo = document.getElementById('bloco-tipo');
+
+  // Estilo visual dos selects
+  document.getElementById('lanc-origem').classList.toggle('tem-valor', !!origem);
+  document.getElementById('lanc-destino').classList.toggle('tem-valor', !!destino);
+
+  // Seta ativa quando pelo menos um lado preenchido
+  seta.classList.toggle('ativa', !!(origem || destino));
+
+  // Preview e lógica de tipo
+  if (origem && destino) {
+    // Transferência
+    preview.textContent = '💸 Transferência: saída de ' + origem + ' + entrada em ' + destino;
+    preview.style.color = '#6f42c1';
+    selecionarTipo('NA');
+    blocoTipo.style.opacity = '0.4';
+    blocoTipo.style.pointerEvents = 'none';
+  } else if (origem && !destino) {
+    // Saída simples
+    preview.textContent = '⬇️ Saída de ' + origem;
+    preview.style.color = '#dc2626';
+    blocoTipo.style.opacity = '1';
+    blocoTipo.style.pointerEvents = '';
+  } else if (!origem && destino) {
+    // Entrada simples
+    preview.textContent = '⬆️ Entrada em ' + destino;
+    preview.style.color = '#16a34a';
+    blocoTipo.style.opacity = '1';
+    blocoTipo.style.pointerEvents = '';
+  } else {
+    preview.textContent = '';
+    blocoTipo.style.opacity = '1';
+    blocoTipo.style.pointerEvents = '';
+  }
 }
 
 function selecionarTipo(tipo) {
@@ -1692,11 +1767,12 @@ function selecionarTipo(tipo) {
 }
 
 function limparFormLancar() {
-  document.getElementById('lanc-valor').value  = '';
-  document.getElementById('lanc-desc').value   = '';
-  document.getElementById('lanc-conta').value  = '';
+  document.getElementById('lanc-valor').value    = '';
+  document.getElementById('lanc-desc').value     = '';
+  document.getElementById('lanc-origem').value   = '';
+  document.getElementById('lanc-destino').value  = '';
   document.getElementById('lanc-manual').checked = false;
-  selecionarDirecao('Saída');
+  atualizarFluxo();
   selecionarTipo('DV');
   document.getElementById('lanc-valor').focus();
 }
