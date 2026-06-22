@@ -1781,10 +1781,29 @@ async function enviarLancamento() {
         + '&manual='    + (manual ? 'true' : 'false');
     }
 
-    var resp = await fetch(url);
-    var resultado;
-    try { resultado = JSON.parse(await resp.text()); }
-    catch(e) { throw new Error('Resposta inválida do servidor.'); }
+    // Timeout de 60s com mensagem progressiva
+    var ctrl = new AbortController();
+    var tId  = setTimeout(function(){ ctrl.abort(); }, 60000);
+    var mId  = setTimeout(function(){
+      btn.textContent = '⏳ Aguarde, processando...';
+    }, 6000);
+
+    var resp, resultado;
+    try {
+      resp = await fetch(url, { signal: ctrl.signal });
+      resultado = JSON.parse(await resp.text());
+    } catch(fe) {
+      if (fe.name === 'AbortError') {
+        // Timeout — avisa mas não trata como erro fatal
+        // O lançamento pode ter sido registrado mesmo assim
+        mostrarFeedback('⚠️ O servidor demorou muito. Verifique a aba Gerais antes de tentar novamente.', 'info');
+        return;
+      }
+      throw fe;
+    } finally {
+      clearTimeout(tId);
+      clearTimeout(mId);
+    }
     if (resultado.erro) throw new Error(resultado.erro);
 
     var prefixoCache = 'pf_' + CLIENTE_KEY + '_cache_';
