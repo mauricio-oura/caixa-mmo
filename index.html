@@ -275,15 +275,19 @@
     .form-lancar .form-control:focus, .form-lancar .form-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); outline: none; }
     .form-lancar .form-control.is-invalid, .form-lancar .form-select.is-invalid { border-color: #dc2626; }
 
-    /* Fluxo visual de contas com seta */
-    .fluxo-contas { display: flex; align-items: center; gap: 10px; }
-    .fluxo-select { flex: 1; min-width: 0; }
-    .fluxo-select select { width: 100%; font-size: 0.85rem; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: white; cursor: pointer; transition: all 0.15s; }
-    .fluxo-select select:focus { border-color: #16a34a; outline: none; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
-    .fluxo-select select.tem-valor { border-color: #16a34a; background: #f0fdf4; font-weight: 600; }
-    .fluxo-select select.is-invalid { border-color: #dc2626; }
-    .fluxo-seta { font-size: 1.6rem; color: #94a3b8; font-weight: 300; flex-shrink: 0; user-select: none; }
-    .fluxo-seta.ativa { color: #16a34a; }
+    /* Tipo de operação */
+    .op-grupo { display: flex; gap: 8px; margin-bottom: 4px; }
+    .op-btn { flex: 1; padding: 10px 6px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .op-btn:hover { background: #f8fafc; }
+    .op-btn.ativo-saida  { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+    .op-btn.ativo-entrada { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+    .op-btn.ativo-transf  { border-color: #6f42c1; background: #ede9fe; color: #5b21b6; }
+    /* Seta na transferência */
+    .transf-row { display: flex; align-items: center; gap: 10px; }
+    .transf-row select { flex: 1; font-size: 0.85rem; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: white; cursor: pointer; transition: all 0.15s; }
+    .transf-row select:focus { border-color: #16a34a; outline: none; }
+    .transf-row select.is-invalid { border-color: #dc2626; }
+    .transf-seta { font-size: 1.4rem; color: #6f42c1; flex-shrink: 0; }
 
     /* Tipo */
     .tipo-grupo { display: flex; gap: 8px; }
@@ -362,15 +366,19 @@
     .form-lancar .form-control:focus, .form-lancar .form-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); outline: none; }
     .form-lancar .form-control.is-invalid, .form-lancar .form-select.is-invalid { border-color: #dc2626; }
 
-    /* Fluxo visual de contas com seta */
-    .fluxo-contas { display: flex; align-items: center; gap: 10px; }
-    .fluxo-select { flex: 1; min-width: 0; }
-    .fluxo-select select { width: 100%; font-size: 0.85rem; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: white; cursor: pointer; transition: all 0.15s; }
-    .fluxo-select select:focus { border-color: #16a34a; outline: none; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
-    .fluxo-select select.tem-valor { border-color: #16a34a; background: #f0fdf4; font-weight: 600; }
-    .fluxo-select select.is-invalid { border-color: #dc2626; }
-    .fluxo-seta { font-size: 1.6rem; color: #94a3b8; font-weight: 300; flex-shrink: 0; user-select: none; }
-    .fluxo-seta.ativa { color: #16a34a; }
+    /* Tipo de operação */
+    .op-grupo { display: flex; gap: 8px; margin-bottom: 4px; }
+    .op-btn { flex: 1; padding: 10px 6px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .op-btn:hover { background: #f8fafc; }
+    .op-btn.ativo-saida  { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+    .op-btn.ativo-entrada { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
+    .op-btn.ativo-transf  { border-color: #6f42c1; background: #ede9fe; color: #5b21b6; }
+    /* Seta na transferência */
+    .transf-row { display: flex; align-items: center; gap: 10px; }
+    .transf-row select { flex: 1; font-size: 0.85rem; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: white; cursor: pointer; transition: all 0.15s; }
+    .transf-row select:focus { border-color: #16a34a; outline: none; }
+    .transf-row select.is-invalid { border-color: #dc2626; }
+    .transf-seta { font-size: 1.4rem; color: #6f42c1; flex-shrink: 0; }
 
     /* Tipo */
     .tipo-grupo { display: flex; gap: 8px; }
@@ -651,40 +659,75 @@
               <input type="text" id="lanc-desc" class="form-control" placeholder="Ex: Supermercado, Farmácia...">
             </div>
 
-            <!-- Fluxo visual: Origem → Destino -->
-            <div class="mb-2">
-              <label class="form-label">🔀 Fluxo * <small style="font-weight:400;color:#94a3b8;">(preencha origem e/ou destino)</small></label>
-              <div class="fluxo-contas">
-                <div class="fluxo-select">
-                  <select id="lanc-origem" onchange="atualizarFluxo()">
-                    <option value="">— origem —</option>
-                    <option value="Itaú">Itaú (BK1)</option>
-                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
-                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
-                    <option value="Dinheiro">Dinheiro (CX)</option>
-                    <option value="Investimento 1">Investimento 1 (INV1)</option>
-                    <option value="Investimento 2">Investimento 2 (INV2)</option>
-                    <option value="A confirmar">A confirmar (X)</option>
-                  </select>
-                </div>
-                <span class="fluxo-seta" id="fluxo-seta">→</span>
-                <div class="fluxo-select">
-                  <select id="lanc-destino" onchange="atualizarFluxo()">
-                    <option value="">— destino —</option>
-                    <option value="Itaú">Itaú (BK1)</option>
-                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
-                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
-                    <option value="Dinheiro">Dinheiro (CX)</option>
-                    <option value="Investimento 1">Investimento 1 (INV1)</option>
-                    <option value="Investimento 2">Investimento 2 (INV2)</option>
-                    <option value="A confirmar">A confirmar (X)</option>
-                  </select>
-                </div>
+            <!-- Tipo de operação -->
+            <div class="mb-3">
+              <label class="form-label">🔀 Tipo de operação *</label>
+              <div class="op-grupo">
+                <button type="button" class="op-btn ativo-saida" id="op-saida"   onclick="selecionarOperacao('saida')">⬇️ Saída</button>
+                <button type="button" class="op-btn"             id="op-entrada" onclick="selecionarOperacao('entrada')">⬆️ Entrada</button>
+                <button type="button" class="op-btn"             id="op-transf"  onclick="selecionarOperacao('transf')">↔️ Transferência</button>
               </div>
-              <div id="fluxo-preview" style="font-size:0.78rem;color:#94a3b8;margin-top:6px;min-height:18px;"></div>
             </div>
 
-            <div class="mb-3" id="bloco-tipo">
+            <!-- Conta saída -->
+            <div class="mb-3" id="bloco-saida">
+              <label class="form-label">🏦 Conta a debitar *</label>
+              <select id="lanc-origem" class="form-select">
+                <option value="">Selecionar...</option>
+                    <option value="Itaú">Itaú (BK1)</option>
+                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                    <option value="Dinheiro">Dinheiro (CX)</option>
+                    <option value="Investimento 1">Investimento 1 (INV1)</option>
+                    <option value="Investimento 2">Investimento 2 (INV2)</option>
+                    <option value="A confirmar">A confirmar (X)</option>
+              </select>
+            </div>
+
+            <!-- Conta entrada -->
+            <div class="mb-3 d-none" id="bloco-entrada">
+              <label class="form-label">🏦 Conta a creditar *</label>
+              <select id="lanc-destino-entrada" class="form-select">
+                <option value="">Selecionar...</option>
+                    <option value="Itaú">Itaú (BK1)</option>
+                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                    <option value="Dinheiro">Dinheiro (CX)</option>
+                    <option value="Investimento 1">Investimento 1 (INV1)</option>
+                    <option value="Investimento 2">Investimento 2 (INV2)</option>
+                    <option value="A confirmar">A confirmar (X)</option>
+              </select>
+            </div>
+
+            <!-- Transferência: origem → destino -->
+            <div class="mb-3 d-none" id="bloco-transf">
+              <label class="form-label">🏦 Transferência *</label>
+              <div class="transf-row">
+                <select id="lanc-transf-origem" class="form-select">
+                  <option value="">Selecionar...</option>
+                    <option value="Itaú">Itaú (BK1)</option>
+                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                    <option value="Dinheiro">Dinheiro (CX)</option>
+                    <option value="Investimento 1">Investimento 1 (INV1)</option>
+                    <option value="Investimento 2">Investimento 2 (INV2)</option>
+                    <option value="A confirmar">A confirmar (X)</option>
+                </select>
+                <span class="transf-seta">→</span>
+                <select id="lanc-transf-destino" class="form-select">
+                  <option value="">Selecionar...</option>
+                    <option value="Itaú">Itaú (BK1)</option>
+                    <option value="Mercado Pago">Mercado Pago (BK2)</option>
+                    <option value="Banco do Brasil">Banco do Brasil (BK3)</option>
+                    <option value="Dinheiro">Dinheiro (CX)</option>
+                    <option value="Investimento 1">Investimento 1 (INV1)</option>
+                    <option value="Investimento 2">Investimento 2 (INV2)</option>
+                    <option value="A confirmar">A confirmar (X)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3" id="bloco-tipo" style="transition:opacity 0.2s;">
               <label class="form-label">🏷 Tipo de Despesa *</label>
               <div class="tipo-grupo">
                 <button class="tipo-btn ativo" id="tipo-DV" onclick="selecionarTipo('DV')">DV<br><small style="font-weight:400;font-size:0.68rem;">Variável</small></button>
@@ -1718,45 +1761,24 @@ function renderizarExtrato(tipo, lista) {
 // ══════════════════════════════════════════════════════════
 // FORM DE LANÇAMENTO VISUAL
 // ══════════════════════════════════════════════════════════
-function atualizarFluxo() {
-  var origem  = document.getElementById('lanc-origem').value;
-  var destino = document.getElementById('lanc-destino').value;
-  var seta    = document.getElementById('fluxo-seta');
-  var preview = document.getElementById('fluxo-preview');
-  var blocoTipo = document.getElementById('bloco-tipo');
+var LANC_OP = ''; // 'saida', 'entrada', 'transf'
 
-  // Estilo visual dos selects
-  document.getElementById('lanc-origem').classList.toggle('tem-valor', !!origem);
-  document.getElementById('lanc-destino').classList.toggle('tem-valor', !!destino);
-
-  // Seta ativa quando pelo menos um lado preenchido
-  seta.classList.toggle('ativa', !!(origem || destino));
-
-  // Preview e lógica de tipo
-  if (origem && destino) {
-    // Transferência
-    preview.textContent = '💸 Transferência: saída de ' + origem + ' + entrada em ' + destino;
-    preview.style.color = '#6f42c1';
-    selecionarTipo('NA');
-    blocoTipo.style.opacity = '0.4';
-    blocoTipo.style.pointerEvents = 'none';
-  } else if (origem && !destino) {
-    // Saída simples
-    preview.textContent = '⬇️ Saída de ' + origem;
-    preview.style.color = '#dc2626';
-    blocoTipo.style.opacity = '1';
-    blocoTipo.style.pointerEvents = '';
-  } else if (!origem && destino) {
-    // Entrada simples
-    preview.textContent = '⬆️ Entrada em ' + destino;
-    preview.style.color = '#16a34a';
-    blocoTipo.style.opacity = '1';
-    blocoTipo.style.pointerEvents = '';
-  } else {
-    preview.textContent = '';
-    blocoTipo.style.opacity = '1';
-    blocoTipo.style.pointerEvents = '';
-  }
+function selecionarOp(op) {
+  LANC_OP = op;
+  // Botões
+  ['saida','entrada','transf'].forEach(function(o) {
+    var btn = document.getElementById('op-' + o);
+    btn.className = 'op-btn' + (o === op ? ' ativo-' + o : '');
+  });
+  // Blocos visíveis
+  document.getElementById('bloco-conta').style.display  = (op === 'saida' || op === 'entrada') ? '' : 'none';
+  document.getElementById('bloco-transf').style.display = op === 'transf' ? '' : 'none';
+  document.getElementById('bloco-tipo').style.display   = op === 'transf' ? 'none' : '';
+  // Label da conta
+  if (op === 'saida')   document.getElementById('label-conta').textContent = '🏦 Conta a debitar *';
+  if (op === 'entrada') document.getElementById('label-conta').textContent = '🏦 Conta a creditar *';
+  // Tipo NA automático em transferência
+  if (op === 'transf') selecionarTipo('NA');
 }
 
 function selecionarTipo(tipo) {
@@ -1769,10 +1791,17 @@ function selecionarTipo(tipo) {
 function limparFormLancar() {
   document.getElementById('lanc-valor').value    = '';
   document.getElementById('lanc-desc').value     = '';
+  document.getElementById('lanc-conta').value    = '';
   document.getElementById('lanc-origem').value   = '';
   document.getElementById('lanc-destino').value  = '';
   document.getElementById('lanc-manual').checked = false;
-  atualizarFluxo();
+  LANC_OP = '';
+  ['saida','entrada','transf'].forEach(function(o){
+    document.getElementById('op-' + o).className = 'op-btn';
+  });
+  document.getElementById('bloco-conta').style.display  = 'none';
+  document.getElementById('bloco-transf').style.display = 'none';
+  document.getElementById('bloco-tipo').style.display   = 'none';
   selecionarTipo('DV');
   document.getElementById('lanc-valor').focus();
 }
@@ -1820,7 +1849,7 @@ async function enviarLancamento() {
   btn.textContent = '⏳ Registrando...';
 
   try {
-    var isTransf = origem && destino;
+    var isTransf = LANC_OP === 'transf';
     var url;
 
     if (isTransf) {
@@ -1833,8 +1862,7 @@ async function enviarLancamento() {
         + '&destino='   + encodeURIComponent(destino)
         + '&manual='    + (manual ? 'true' : 'false');
     } else {
-      var direcao = origem ? 'Saída' : 'Entrada';
-      var conta   = origem || destino;
+      var direcao = LANC_OP === 'saida' ? 'Saída' : 'Entrada';
       url = GAS_URL
         + '?token='     + encodeURIComponent(TOKEN)
         + '&acao=novoLancamento'
@@ -1861,8 +1889,8 @@ async function enviarLancamento() {
     EXT_BKP = null;
 
     var msg = isTransf
-      ? '✅ Transferência registrada (' + origem + ' → ' + destino + ')!'
-      : '✅ Lançamento registrado!';
+      ? '✅ Transferência: ' + origem + ' → ' + destino
+      : (LANC_OP === 'saida' ? '✅ Saída registrada!' : '✅ Entrada registrada!');
     mostrarFeedback(msg, 'ok');
     limparFormLancar();
 
