@@ -1791,23 +1791,28 @@ async function enviarLancamento() {
   var conta  = document.getElementById('lanc-conta').value;
   var manual = document.getElementById('lanc-manual').checked;
 
-  // Validações
+  // Limpa estados anteriores
   document.getElementById('lanc-valor').classList.remove('is-invalid');
   document.getElementById('lanc-desc').classList.remove('is-invalid');
-  document.getElementById('lanc-conta').classList.remove('is-invalid');
+  document.getElementById('lanc-origem').classList.remove('is-invalid');
+  document.getElementById('lanc-destino').classList.remove('is-invalid');
 
   // Rejeita valor negativo
   if (valor < 0) {
     document.getElementById('lanc-valor').value = '';
     document.getElementById('lanc-valor').classList.add('is-invalid');
-    mostrarFeedback('⚠️ Insira apenas valores positivos. A direção (Saída/Entrada) define o sinal.', 'info');
+    mostrarFeedback('⚠️ Insira apenas valores positivos. O fluxo define o sinal.', 'info');
     return;
   }
 
   var erros = false;
   if (!valor || valor <= 0) { document.getElementById('lanc-valor').classList.add('is-invalid'); erros = true; }
   if (!desc)                { document.getElementById('lanc-desc').classList.add('is-invalid');  erros = true; }
-  if (!conta)               { document.getElementById('lanc-conta').classList.add('is-invalid'); erros = true; }
+  if (!origem && !destino)  {
+    document.getElementById('lanc-origem').classList.add('is-invalid');
+    document.getElementById('lanc-destino').classList.add('is-invalid');
+    erros = true;
+  }
   if (erros) { mostrarFeedback('Preencha os campos obrigatórios.', 'erro'); return; }
 
   var btn = document.getElementById('btn-lancar');
@@ -1815,46 +1820,50 @@ async function enviarLancamento() {
   btn.textContent = '⏳ Registrando...';
 
   try {
-    var params = new URLSearchParams({
-      token:     TOKEN,
-      acao:      'novoLancamento',
-      valor:     valor,
-      descricao: desc,
-      conta:     conta,
-      direcao:   LANC_DIRECAO,
-      tipo:      LANC_TIPO,
-      manual:    manual ? 'true' : 'false'
-    });
+    var isTransf = origem && destino;
+    var url;
 
-    // Monta URL com todos os parâmetros e usa o mesmo fetch do chamarGAS
-    var url = GAS_URL
-      + '?token='     + encodeURIComponent(TOKEN)
-      + '&acao=novoLancamento'
-      + '&valor='     + encodeURIComponent(valor)
-      + '&descricao=' + encodeURIComponent(desc)
-      + '&conta='     + encodeURIComponent(conta)
-      + '&direcao='   + encodeURIComponent(LANC_DIRECAO)
-      + '&tipo='      + encodeURIComponent(LANC_TIPO)
-      + '&manual='    + (manual ? 'true' : 'false');
+    if (isTransf) {
+      url = GAS_URL
+        + '?token='     + encodeURIComponent(TOKEN)
+        + '&acao=novoLancamentoTransf'
+        + '&valor='     + encodeURIComponent(valor)
+        + '&descricao=' + encodeURIComponent(desc)
+        + '&origem='    + encodeURIComponent(origem)
+        + '&destino='   + encodeURIComponent(destino)
+        + '&manual='    + (manual ? 'true' : 'false');
+    } else {
+      var direcao = origem ? 'Saída' : 'Entrada';
+      var conta   = origem || destino;
+      url = GAS_URL
+        + '?token='     + encodeURIComponent(TOKEN)
+        + '&acao=novoLancamento'
+        + '&valor='     + encodeURIComponent(valor)
+        + '&descricao=' + encodeURIComponent(desc)
+        + '&conta='     + encodeURIComponent(conta)
+        + '&direcao='   + encodeURIComponent(direcao)
+        + '&tipo='      + encodeURIComponent(LANC_TIPO)
+        + '&manual='    + (manual ? 'true' : 'false');
+    }
 
-    var resp      = await fetch(url);
-    var texto     = await resp.text();
+    var resp = await fetch(url);
+    var texto = await resp.text();
     var resultado;
-    try { resultado = JSON.parse(texto); } 
+    try { resultado = JSON.parse(texto); }
     catch(e) { throw new Error('Resposta inválida do servidor.'); }
     if (resultado.erro) throw new Error(resultado.erro);
 
-    // Sucesso — invalida cache
     var prefixoCache = 'pf_' + CLIENTE_KEY + '_cache_';
-    ['lancamentos', 'ext-bkp'].forEach(function(k){
-      localStorage.removeItem(prefixoCache + k);
-    });
+    ['lancamentos', 'ext-bkp'].forEach(function(k){ localStorage.removeItem(prefixoCache + k); });
     ABA_RENDERIZADA['lancamentos'] = false;
     ABA_RENDERIZADA['ext-bkp']    = false;
     DADOS_LANCAMENTOS = null;
     EXT_BKP = null;
 
-    mostrarFeedback('✅ Lançamento registrado com sucesso!', 'ok');
+    var msg = isTransf
+      ? '✅ Transferência registrada (' + origem + ' → ' + destino + ')!'
+      : '✅ Lançamento registrado!';
+    mostrarFeedback(msg, 'ok');
     limparFormLancar();
 
   } catch(err) {
@@ -1864,6 +1873,29 @@ async function enviarLancamento() {
     btn.textContent = '➕ Registrar Lançamento';
   }
 }
+
+// Confirmar lançamento pendente (chamado pelos botões na aba Gerais)
+async function confirmarLancamento(linha, btnEl) {
+  if (!confirm('Confirmar este lançamento? Ele será movido para o histórico e o saldo será atualizado.')) return;
+  btnEl.disabled    = true;
+  btnEl.textContent = '⏳';
+  try {
+    var resp  = await fetch(GAS_URL + '?token=' + encodeURIComponent(TOKEN) + '&acao=confirmarLancamento&linha=' + linha);
+    var dados = JSON.parse(await resp.text());
+    if (dados.erro) throw new Error(dados.erro);
+    toast('✅ Lançamento confirmado!', 3000);
+    var prefixoCache = 'pf_' + CLIENTE_KEY + '_cache_';
+    ['lancamentos','ext-bkp'].forEach(function(k){ localStorage.removeItem(prefixoCache + k); });
+    DADOS_LANCAMENTOS = null; EXT_BKP = null;
+    ABA_RENDERIZADA['lancamentos'] = false;
+    alternarAba('lancamentos');
+  } catch(err) {
+    btnEl.disabled    = false;
+    btnEl.textContent = '✓ Confirmar';
+    toast('❌ Erro: ' + err.message, 5000);
+  }
+}
+
 
 function limparFiltrosExt(tipo) {
   // Limpa busca
