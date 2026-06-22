@@ -1675,18 +1675,16 @@ function selecionarOp(op) {
   LANC_OP = op;
   // Botões
   ['saida','entrada','transf'].forEach(function(o) {
-    var btn = document.getElementById('op-' + o);
-    btn.className = 'op-btn' + (o === op ? ' ativo-' + o : '');
+    document.getElementById('op-' + o).className = 'op-btn' + (o === op ? ' ativo-' + o : '');
   });
-  // Blocos visíveis
-  document.getElementById('bloco-conta').style.display  = (op === 'saida' || op === 'entrada') ? '' : 'none';
-  document.getElementById('bloco-transf').style.display = op === 'transf' ? '' : 'none';
-  document.getElementById('bloco-tipo').style.display   = op === 'transf' ? 'none' : '';
-  // Label da conta
-  if (op === 'saida')   document.getElementById('label-conta').textContent = '🏦 Conta a debitar *';
-  if (op === 'entrada') document.getElementById('label-conta').textContent = '🏦 Conta a creditar *';
+  // Blocos — alinhados com IDs reais do HTML
+  document.getElementById('bloco-saida').classList.toggle('d-none',  op !== 'saida');
+  document.getElementById('bloco-entrada').classList.toggle('d-none', op !== 'entrada');
+  document.getElementById('bloco-transf').classList.toggle('d-none',  op !== 'transf');
+  document.getElementById('bloco-tipo').classList.toggle('d-none',    op === 'transf');
   // Tipo NA automático em transferência
   if (op === 'transf') selecionarTipo('NA');
+  else selecionarTipo('DV');
 }
 
 function selecionarTipo(tipo) {
@@ -1697,19 +1695,19 @@ function selecionarTipo(tipo) {
 }
 
 function limparFormLancar() {
-  document.getElementById('lanc-valor').value    = '';
-  document.getElementById('lanc-desc').value     = '';
-  document.getElementById('lanc-conta').value    = '';
-  document.getElementById('lanc-origem').value   = '';
-  document.getElementById('lanc-destino').value  = '';
-  document.getElementById('lanc-manual').checked = false;
+  document.getElementById('lanc-valor').value          = '';
+  document.getElementById('lanc-desc').value           = '';
+  document.getElementById('lanc-origem').value         = '';
+  document.getElementById('lanc-destino-entrada').value = '';
+  document.getElementById('lanc-transf-origem').value  = '';
+  document.getElementById('lanc-transf-destino').value = '';
+  document.getElementById('lanc-manual').checked       = false;
   LANC_OP = '';
   ['saida','entrada','transf'].forEach(function(o){
     document.getElementById('op-' + o).className = 'op-btn';
   });
-  document.getElementById('bloco-conta').style.display  = 'none';
-  document.getElementById('bloco-transf').style.display = 'none';
-  document.getElementById('bloco-tipo').style.display   = 'none';
+  // Volta ao estado inicial: só saída visível
+  selecionarOp('saida');
   selecionarTipo('DV');
   document.getElementById('lanc-valor').focus();
 }
@@ -1723,40 +1721,35 @@ function mostrarFeedback(msg, tipo) {
 }
 
 async function enviarLancamento() {
-  // Lê todos os campos
-  var valor   = parseFloat(document.getElementById('lanc-valor').value);
-  var desc    = document.getElementById('lanc-desc').value.trim();
-  var conta   = document.getElementById('lanc-conta').value;
-  var origem  = document.getElementById('lanc-origem').value;
-  var destino = document.getElementById('lanc-destino').value;
-  var manual  = document.getElementById('lanc-manual').checked;
+  // Lê campos conforme IDs reais do HTML
+  var valor        = parseFloat(document.getElementById('lanc-valor').value);
+  var desc         = document.getElementById('lanc-desc').value.trim();
+  var contaSaida   = document.getElementById('lanc-origem').value;           // saída
+  var contaEntrada = document.getElementById('lanc-destino-entrada').value;  // entrada
+  var transfOrig   = document.getElementById('lanc-transf-origem').value;    // transf origem
+  var transfDest   = document.getElementById('lanc-transf-destino').value;   // transf destino
+  var manual       = document.getElementById('lanc-manual').checked;
 
-  // Limpa erros anteriores
-  ['lanc-valor','lanc-desc','lanc-conta','lanc-origem','lanc-destino'].forEach(function(id){
-    document.getElementById(id).classList.remove('is-invalid');
-  });
+  // Limpa erros
+  ['lanc-valor','lanc-desc','lanc-origem','lanc-destino-entrada','lanc-transf-origem','lanc-transf-destino']
+    .forEach(function(id){ document.getElementById(id).classList.remove('is-invalid'); });
 
-  // Tipo de operação obrigatório
   if (!LANC_OP) {
-    mostrarFeedback('Selecione o tipo de operação (Saída, Entrada ou Transferência).', 'erro');
-    return;
+    mostrarFeedback('Selecione o tipo de operação.', 'erro'); return;
   }
-
-  // Rejeita valor negativo
   if (valor < 0) {
     document.getElementById('lanc-valor').value = '';
     document.getElementById('lanc-valor').classList.add('is-invalid');
-    mostrarFeedback('⚠️ Insira apenas valores positivos.', 'info');
-    return;
+    mostrarFeedback('⚠️ Insira apenas valores positivos.', 'info'); return;
   }
 
-  // Validações por tipo
   var erros = false;
-  if (!valor || valor <= 0) { document.getElementById('lanc-valor').classList.add('is-invalid'); erros = true; }
-  if (!desc)                { document.getElementById('lanc-desc').classList.add('is-invalid');  erros = true; }
-  if (LANC_OP !== 'transf' && !conta)  { document.getElementById('lanc-conta').classList.add('is-invalid');   erros = true; }
-  if (LANC_OP === 'transf' && !origem) { document.getElementById('lanc-origem').classList.add('is-invalid');  erros = true; }
-  if (LANC_OP === 'transf' && !destino){ document.getElementById('lanc-destino').classList.add('is-invalid'); erros = true; }
+  if (!valor || valor <= 0)                  { document.getElementById('lanc-valor').classList.add('is-invalid'); erros = true; }
+  if (!desc)                                 { document.getElementById('lanc-desc').classList.add('is-invalid');  erros = true; }
+  if (LANC_OP === 'saida'   && !contaSaida)  { document.getElementById('lanc-origem').classList.add('is-invalid'); erros = true; }
+  if (LANC_OP === 'entrada' && !contaEntrada){ document.getElementById('lanc-destino-entrada').classList.add('is-invalid'); erros = true; }
+  if (LANC_OP === 'transf'  && !transfOrig)  { document.getElementById('lanc-transf-origem').classList.add('is-invalid'); erros = true; }
+  if (LANC_OP === 'transf'  && !transfDest)  { document.getElementById('lanc-transf-destino').classList.add('is-invalid'); erros = true; }
   if (erros) { mostrarFeedback('Preencha os campos obrigatórios.', 'erro'); return; }
 
   var btn = document.getElementById('btn-lancar');
@@ -1764,19 +1757,18 @@ async function enviarLancamento() {
   btn.textContent = '⏳ Registrando...';
 
   try {
-    var isTransf = LANC_OP === 'transf';
     var url;
-
-    if (isTransf) {
+    if (LANC_OP === 'transf') {
       url = GAS_URL
         + '?token='     + encodeURIComponent(TOKEN)
         + '&acao=novoLancamentoTransf'
         + '&valor='     + encodeURIComponent(valor)
         + '&descricao=' + encodeURIComponent(desc)
-        + '&origem='    + encodeURIComponent(origem)
-        + '&destino='   + encodeURIComponent(destino)
+        + '&origem='    + encodeURIComponent(transfOrig)
+        + '&destino='   + encodeURIComponent(transfDest)
         + '&manual='    + (manual ? 'true' : 'false');
     } else {
+      var conta   = LANC_OP === 'saida' ? contaSaida : contaEntrada;
       var direcao = LANC_OP === 'saida' ? 'Saída' : 'Entrada';
       url = GAS_URL
         + '?token='     + encodeURIComponent(TOKEN)
@@ -1790,21 +1782,19 @@ async function enviarLancamento() {
     }
 
     var resp = await fetch(url);
-    var texto = await resp.text();
     var resultado;
-    try { resultado = JSON.parse(texto); }
+    try { resultado = JSON.parse(await resp.text()); }
     catch(e) { throw new Error('Resposta inválida do servidor.'); }
     if (resultado.erro) throw new Error(resultado.erro);
 
     var prefixoCache = 'pf_' + CLIENTE_KEY + '_cache_';
-    ['lancamentos', 'ext-bkp'].forEach(function(k){ localStorage.removeItem(prefixoCache + k); });
+    ['lancamentos','ext-bkp'].forEach(function(k){ localStorage.removeItem(prefixoCache + k); });
     ABA_RENDERIZADA['lancamentos'] = false;
-    ABA_RENDERIZADA['ext-bkp']    = false;
-    DADOS_LANCAMENTOS = null;
-    EXT_BKP = null;
+    ABA_RENDERIZADA['ext-bkp'] = false;
+    DADOS_LANCAMENTOS = null; EXT_BKP = null;
 
-    var msg = isTransf
-      ? '✅ Transferência: ' + origem + ' → ' + destino
+    var msg = LANC_OP === 'transf'
+      ? '✅ Transferência: ' + transfOrig + ' → ' + transfDest
       : (LANC_OP === 'saida' ? '✅ Saída registrada!' : '✅ Entrada registrada!');
     mostrarFeedback(msg, 'ok');
     limparFormLancar();
